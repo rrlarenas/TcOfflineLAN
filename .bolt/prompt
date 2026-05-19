@@ -1,0 +1,1 @@
+Cada proyecto debe contar con README con información de instalacion y uso, un CHANGE LOG con los cambios entre versiones, y un script de setup para cada componente. al implementar cambios no se deben alterar las funcionalidades existentes
