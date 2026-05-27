@@ -1,7 +1,7 @@
 import asyncio
 from app.settings import settings
 from app.outbox_processor import OutboxProcessor
-from app.sync_service import start_health_monitoring, sync_from_central
+from app.sync_service import start_health_monitoring, sync_from_central, sync_users_from_central
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -33,6 +33,11 @@ class SyncScheduler:
             logger.info("Background downstream sync completed")
         except Exception as e:
             logger.error(f"Error in downstream sync: {e}")
+
+        try:
+            await sync_users_from_central()
+        except Exception as e:
+            logger.error(f"Error in user sync: {e}")
 
     async def run_upstream_sync(self):
         logger.info("=" * 80)

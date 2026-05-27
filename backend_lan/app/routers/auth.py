@@ -7,6 +7,7 @@ from app.auth_utils import (
     get_current_active_user, get_current_admin_user
 )
 from app.db import get_db
+from app.sync_service import _set_user_filtro
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -65,7 +66,8 @@ def create_user(
         nombre=user_data.nombre,
         is_admin=user_data.is_admin,
         active=True,
-        role="user"
+        role="user",
+        filtros=_set_user_filtro(None, user_data.username),
     )
     db.add(new_user)
     db.commit()

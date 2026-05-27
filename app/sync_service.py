@@ -1,4 +1,5 @@
 import asyncio
+import hashlib
 import httpx
 from datetime import datetime
 from typing import Optional, List
@@ -26,9 +27,6 @@ class CentralHealthChecker:
 
     async def check_health(self) -> bool:
         """Check if central server is reachable using a HEAD request to the base URL."""
-        httpx_logger = logging.getLogger("httpx")
-        prev_level = httpx_logger.level
-        httpx_logger.setLevel(logging.WARNING)
         try:
             async with httpx.AsyncClient(timeout=5.0) as client:
                 response = await client.head(self.central_url)
@@ -41,8 +39,6 @@ class CentralHealthChecker:
                     return True
         except Exception as e:
             logger.warning(f"Central health check failed: {e}")
-        finally:
-            httpx_logger.setLevel(prev_level)
 
         self.consecutive_successes = 0
         self.consecutive_failures += 1
@@ -305,6 +301,110 @@ class CentralDataSync:
         except Exception as e:
             logger.error(f"Error processing episode item: {e}")
             raise
+
+
+class CentralUserSync:
+    """Sync users from central server into local users table."""
+
+    def __init__(self, central_url: str):
+        self.central_url = central_url
+
+    @staticmethod
+    def _compute_hash(username: str, nombre: str, password: str) -> str:
+        raw = f"{username}|{nombre}|{password}"
+        return hashlib.sha256(raw.encode()).hexdigest()
+
+    async def fetch_users(self) -> Optional[List[dict]]:
+        try:
+            api_url = f"{self.central_url}{settings.CENTRAL_USERS_ENDPOINT}"
+            auth = (settings.CENTRAL_API_USERNAME, settings.CENTRAL_API_PASSWORD)
+            logger.info(f"Fetching users from: {api_url}")
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.get(api_url, auth=auth)
+                if response.status_code == 200:
+                    data = response.json()
+                    if isinstance(data, list):
+                        return data
+                    logger.error(f"Expected list from users endpoint, got: {type(data)}")
+                    return None
+                else:
+                    logger.error(f"Failed to fetch users: {response.status_code}")
+                    return None
+        except Exception as e:
+            logger.error(f"Error fetching users from central: {e}")
+            return None
+
+    def process_users(self, db: Session, users: List[dict]):
+        import base64 as _b64
+        from app.auth_utils import make_central_password_hash
+        created = updated = skipped = 0
+        for item in users:
+            # Real central API fields: username, password (base64-encoded PBKDF2 output),
+            # passwordSalt (base64), active ("Y"/"N"), cpNombre
+            username = item.get("username")
+            raw_password_hash = item.get("password") or ""
+            salt_b64 = item.get("passwordSalt") or ""
+            # Some central users have password as raw binary (contains NUL/non-ASCII).
+            # If it contains NUL or non-ASCII chars, encode to base64 for safe storage.
+            if "\x00" in raw_password_hash or not raw_password_hash.isascii():
+                raw_password_hash = _b64.b64encode(
+                    raw_password_hash.encode("latin-1")
+                ).decode("ascii")
+            active_flag = item.get("active", "Y")
+            active = str(active_flag).upper() == "Y"
+            # cpNombre preferred; fall back to descripcion, then username
+            nombre = item.get("cpNombre") or item.get("descripcion") or username
+
+            if not username or not raw_password_hash:
+                logger.warning(f"Skipping user with missing username or password: {item}")
+                continue
+
+            incoming_hash = self._compute_hash(username, nombre, raw_password_hash)
+            stored_password = make_central_password_hash(raw_password_hash, salt_b64)
+            existing = db.query(models.User).filter(models.User.username == username).first()
+
+            if existing:
+                if existing.central_sync_hash == incoming_hash:
+                    skipped += 1
+                    continue
+                existing.nombre = nombre
+                existing.active = active
+                existing.hashed_password = stored_password
+                existing.central_sync_hash = incoming_hash
+                updated += 1
+                logger.info(f"Updated user from central: {username}")
+            else:
+                new_user = models.User(
+                    username=username,
+                    nombre=nombre,
+                    hashed_password=stored_password,
+                    central_sync_hash=incoming_hash,
+                    active=active,
+                    role="user",
+                    is_admin=False,
+                )
+                db.add(new_user)
+                created += 1
+                logger.info(f"Created user from central: {username}")
+
+        db.commit()
+        logger.info(f"User sync complete: {created} created, {updated} updated, {skipped} skipped (no changes)")
+
+
+async def sync_users_from_central():
+    """Sync users from central server into local database."""
+    db = SessionLocal()
+    try:
+        syncer = CentralUserSync(settings.CENTRAL_URL)
+        users = await syncer.fetch_users()
+        if users is not None:
+            syncer.process_users(db, users)
+        else:
+            logger.warning("No users received from central (or endpoint unavailable)")
+    except Exception as e:
+        logger.error(f"Error in sync_users_from_central: {e}")
+    finally:
+        db.close()
 
 
 async def start_health_monitoring():

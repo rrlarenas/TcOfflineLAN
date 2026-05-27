@@ -11,6 +11,7 @@ class EndpointFilter(logging.Filter):
         return record.getMessage().find("GET /auth/me") == -1
 
 logging.getLogger("uvicorn.access").addFilter(EndpointFilter())
+logging.getLogger("httpx").setLevel(logging.WARNING)
 
 Base.metadata.create_all(bind=engine)
 

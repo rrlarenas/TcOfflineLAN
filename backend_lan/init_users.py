@@ -9,6 +9,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from app.db import SessionLocal, engine, Base
 from app import models
+from app.sync_service import _set_user_filtro
 
 
 def init_users():
@@ -22,7 +23,8 @@ def init_users():
                 role="admin",
                 is_admin=True,
                 active=True,
-                nombre="Administrador"
+                nombre="Administrador",
+                filtros=_set_user_filtro(None, "admin"),
             )
             db.add(admin)
             print("Created user: admin / admin")
@@ -37,7 +39,8 @@ def init_users():
                 role="user",
                 is_admin=False,
                 active=True,
-                nombre="Usuario Demo"
+                nombre="Usuario Demo",
+                filtros=_set_user_filtro(None, "demo"),
             )
             db.add(demo)
             print("Created user: demo / demo")

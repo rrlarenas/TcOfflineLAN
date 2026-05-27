@@ -13,6 +13,7 @@ class EndpointFilter(logging.Filter):
 
 
 logging.getLogger("uvicorn.access").addFilter(EndpointFilter())
+logging.getLogger("httpx").setLevel(logging.WARNING)
 
 Base.metadata.create_all(bind=engine)
 

@@ -10,6 +10,8 @@ class CentralUser(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     username: Mapped[str] = mapped_column(String(100), unique=True, index=True, nullable=False)
+    nombre: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
+    plain_password: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     email: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     role: Mapped[str] = mapped_column(String(50), nullable=False, default="user")
     active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)

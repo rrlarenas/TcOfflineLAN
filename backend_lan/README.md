@@ -14,10 +14,132 @@ Backend LAN del sistema TrakCare Offline. Variante del backend local diseñada p
 
 ## Requisitos
 
-- Python 3.12+
-- PostgreSQL 14+
+- Python 3.12+ (instalación directa)  
+- Docker 20.10+ y Docker Compose v2 (despliegue Docker)
 
-## Instalación
+## Despliegue con Docker (recomendado para producción)
+
+### Archivos incluidos
+
+| Archivo | Descripción |
+|---|---|
+| `Dockerfile` | Imagen del backend (Python 3.11-slim) |
+| `docker-entrypoint.sh` | Espera PostgreSQL, aplica migraciones y arranca uvicorn |
+| `docker-compose.yml` | Stack completo: backend + PostgreSQL |
+| `docker-build-deploy.sh` | Script de build, exportación y despliegue remoto |
+
+### Opción A — Build y despliegue en un solo paso
+
+Desde el directorio `backend_lan/`, con Docker instalado localmente:
+
+```bash
+# 1. Copiar y configurar el archivo de entorno
+cp .env.example .env
+# Editar .env con los valores reales (SECRET_KEY, CENTRAL_URL, etc.)
+
+# 2. Build + transferir + levantar en servidor remoto
+chmod +x docker-build-deploy.sh
+./docker-build-deploy.sh --deploy usuario@IP_SERVIDOR
+
+# Con puerto SSH alternativo
+./docker-build-deploy.sh --deploy usuario@IP_SERVIDOR --port 2222
+
+# Con tag de versión específico
+./docker-build-deploy.sh --deploy usuario@IP_SERVIDOR --tag 1.9.2-rc08
+```
+
+El script realiza automáticamente:
+1. `docker build` de la imagen
+2. Exportación a `.tar.gz`
+3. Transferencia del archivo + `docker-compose.yml` + `.env` via SCP
+4. `docker load` en el servidor remoto
+5. `docker compose up -d`
+
+### Opción B — Solo build (para transferencia manual)
+
+```bash
+./docker-build-deploy.sh
+# Genera: trakcare-backend-lan-latest.tar.gz
+```
+
+Transferencia y carga manual en el servidor:
+
+```bash
+# En la máquina de desarrollo
+scp trakcare-backend-lan-latest.tar.gz  usuario@servidor:/opt/trakcare-backend-lan/
+scp docker-compose.yml                  usuario@servidor:/opt/trakcare-backend-lan/
+scp .env                                usuario@servidor:/opt/trakcare-backend-lan/
+
+# En el servidor
+cd /opt/trakcare-backend-lan
+gunzip -c trakcare-backend-lan-latest.tar.gz | docker load
+docker compose up -d
+```
+
+### Opción C — Build directo en el servidor
+
+Si Docker está disponible en el servidor y se puede transferir el código fuente:
+
+```bash
+# Transferir código fuente
+scp -r backend_lan/ usuario@servidor:/opt/trakcare-backend-lan/
+
+# En el servidor
+cd /opt/trakcare-backend-lan
+cp .env.example .env   # editar con valores reales
+docker build -t trakcare-backend-lan:latest .
+docker compose up -d
+```
+
+### Verificar despliegue
+
+```bash
+# Estado de los contenedores
+docker compose ps
+
+# Logs del backend
+docker compose logs -f backend
+
+# Logs de PostgreSQL
+docker compose logs -f db
+
+# Health check
+curl http://localhost:8000/health
+```
+
+### Detener / reiniciar / actualizar
+
+```bash
+# Detener
+docker compose down
+
+# Reiniciar sin recrear volúmenes (datos se conservan)
+docker compose restart backend
+
+# Actualizar imagen (nueva versión)
+gunzip -c trakcare-backend-lan-nueva-version.tar.gz | docker load
+docker compose up -d --no-deps backend
+
+# Eliminar todo incluyendo base de datos (DESTRUCTIVO)
+docker compose down -v
+```
+
+### Variables en docker-compose.yml
+
+El `docker-compose.yml` lee las variables del archivo `.env` en el mismo directorio. Las variables críticas a configurar:
+
+```env
+SECRET_KEY=<clave-aleatoria-larga-min-32-chars>
+CENTRAL_URL=http://<servidor-central>
+CENTRAL_API_USERNAME=<usuario>
+CENTRAL_API_PASSWORD=<password>
+```
+
+> La `DATABASE_URL` dentro del compose apunta al servicio `db` interno (`db:5432`). No es necesario cambiarla si se usa el compose completo.
+
+---
+
+## Instalación directa (sin Docker)
 
 ### 1. Preparar la base de datos PostgreSQL
 

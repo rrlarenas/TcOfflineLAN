@@ -5,6 +5,8 @@ from typing import Optional
 
 class CentralUserBase(BaseModel):
     username: str
+    nombre: Optional[str] = None
+    plain_password: Optional[str] = None
     email: Optional[str] = None
     role: str = "user"
     active: bool = True
@@ -15,6 +17,15 @@ class CentralUser(CentralUserBase):
     id: int
     created_at: datetime
     updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class CentralUserSync(BaseModel):
+    """Payload returned by /central/users/sync for offline backend user synchronization."""
+    username: str
+    nombre: str
+    password: str
 
     model_config = ConfigDict(from_attributes=True)
 

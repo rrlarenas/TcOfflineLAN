@@ -21,11 +21,13 @@ class User(Base):
     filtros: Mapped[str] = mapped_column(Text, nullable=True)
     last_login: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=func.now(), onupdate=func.now())
+    central_sync_hash: Mapped[str] = mapped_column(Text, nullable=True)
 
     clinical_notes: Mapped[list["ClinicalNote"]] = relationship(back_populates="author")
 
     def verify_password(self, password: str) -> bool:
-        return pwd_context.verify(password, self.hashed_password)
+        from app.auth_utils import verify_password as _verify
+        return _verify(password, self.hashed_password)
 
     @staticmethod
     def hash_password(password: str) -> str:

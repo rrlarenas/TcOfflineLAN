@@ -1,5 +1,8 @@
 from datetime import datetime, timedelta, timezone
 from typing import Optional
+import base64
+import hashlib
+import hmac
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 from fastapi import Depends, HTTPException, status
@@ -10,17 +13,51 @@ from app import models, schemas
 from app.settings import settings
 
 ALGORITHM = "HS256"
+# Stored format: "pbkdf2central:<base64_salt>:<base64_hash>"
+# InterSystems TrakCare: PBKDF2-SHA1, 2500 iterations, dkLen=32
+PBKDF2_PREFIX = "pbkdf2central:"
+PBKDF2_ITERATIONS = 2500
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
 
+def _verify_pbkdf2_central(plain_password: str, stored: str) -> bool:
+    """Verify against InterSystems TrakCare PBKDF2-SHA1 hash.
+    stored format: pbkdf2central:<base64_salt>:<base64_hash>
+    Re-derives locally with PBKDF2-SHA1 / 2500 iters / dkLen=32 and compares.
+    """
+    payload = stored[len(PBKDF2_PREFIX):]
+    salt_b64, hash_b64 = payload.split(":", 1)
+    salt = base64.b64decode(salt_b64) if salt_b64 else b""
+    expected = base64.b64decode(hash_b64)
+    derived = hashlib.pbkdf2_hmac(
+        "sha1",
+        plain_password.encode("utf-8"),
+        salt,
+        PBKDF2_ITERATIONS,
+        dklen=32,
+    )
+    return hmac.compare_digest(derived, expected)
+
+
 def verify_password(plain_password: str, hashed_password: str) -> bool:
+    if hashed_password.startswith(PBKDF2_PREFIX):
+        return _verify_pbkdf2_central(plain_password, hashed_password)
     return pwd_context.verify(plain_password, hashed_password)
 
 
 def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
+
+
+def make_central_password_hash(raw_password_b64: str, salt_b64: str) -> str:
+    """Build the stored string from the central server fields.
+    raw_password_b64: the base64-encoded PBKDF2 output from central (field 'password').
+    salt_b64: the base64-encoded salt from central (field 'passwordSalt').
+    Stored as-is — verification re-derives locally using the plain password.
+    """
+    return f"{PBKDF2_PREFIX}{salt_b64}:{raw_password_b64}"
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:

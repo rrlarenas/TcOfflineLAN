@@ -39,6 +39,31 @@ def list_users(
     return users
 
 
+@router.get("/sync")
+def list_users_for_sync(
+    db: Session = Depends(get_db)
+):
+    """
+    Endpoint used by offline backends to sync users.
+    Returns data in the same structure as the real central server /getUsers endpoint.
+    """
+    users = db.query(models.CentralUser).filter(models.CentralUser.active == True).all()
+    return [
+        {
+            "idUsuario": str(u.id),
+            "username": u.username,
+            "descripcion": u.nombre or u.username,
+            "active": "Y" if u.active else "N",
+            "password": u.plain_password or "",
+            "passwordSalt": "",
+            "cpRut": "",
+            "cpNombre": u.nombre or "",
+            "cpTipoProfesional": "",
+        }
+        for u in users
+    ]
+
+
 @router.get("/{user_id}", response_model=schemas.CentralUser)
 def get_user(
     user_id: int,

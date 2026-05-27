@@ -1,0 +1,53 @@
+services:
+  backend:
+    image: trakcare-backend-lan:latest
+    container_name: trakcare-backend-lan
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://tcoffline:tcoffline@db:5432/tcoffline
+      SECRET_KEY: ${SECRET_KEY:-change-this-in-production-use-a-long-random-string}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-480}
+      CENTRAL_URL: ${CENTRAL_URL:-http://demo01.tcdb.vtas.cl.intersystems.com}
+      CENTRAL_API_ENDPOINT: ${CENTRAL_API_ENDPOINT:-/demo01/tcoffline/getData}
+      CENTRAL_HL7_ENDPOINT: ${CENTRAL_HL7_ENDPOINT:-/demo01/tcoffline/hl7inbound}
+      CENTRAL_USERS_ENDPOINT: ${CENTRAL_USERS_ENDPOINT:-/demo01/tcoffline/getUsers}
+      CENTRAL_API_USERNAME: ${CENTRAL_API_USERNAME:-demo}
+      CENTRAL_API_PASSWORD: ${CENTRAL_API_PASSWORD:-demodemo}
+      HEALTH_CHECK_INTERVAL: ${HEALTH_CHECK_INTERVAL:-8}
+      DOWNSTREAM_SYNC_INTERVAL: ${DOWNSTREAM_SYNC_INTERVAL:-60}
+      UPSTREAM_SYNC_INTERVAL: ${UPSTREAM_SYNC_INTERVAL:-10}
+      MAX_RETRIES: ${MAX_RETRIES:-5}
+      DEFAULT_LANGUAGE: ${DEFAULT_LANGUAGE:-es}
+      ENVIRONMENT: production
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - trakcare-net
+
+  db:
+    image: postgres:15-alpine
+    container_name: trakcare-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: tcoffline
+      POSTGRES_USER: tcoffline
+      POSTGRES_PASSWORD: tcoffline
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tcoffline -d tcoffline"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - trakcare-net
+
+volumes:
+  postgres_data:
+
+networks:
+  trakcare-net:
+    driver: bridge
