@@ -7,6 +7,7 @@ from app.db import get_db
 from app.auth_utils import get_current_active_user, get_current_admin_user, get_optional_current_user
 from app.settings import settings
 from app.dependencies import get_lang
+from app.routers.admin import get_runtime_config
 
 router = APIRouter(tags=["general"])
 
@@ -22,14 +23,18 @@ def check_central_health(
     db: Session = Depends(get_db),
     current_user: models.User | None = Depends(get_optional_current_user)
 ):
+    cfg = get_runtime_config(db)
+    central_url = cfg.central_url if cfg else settings.CENTRAL_URL
+    api_endpoint = cfg.central_api_endpoint if cfg else settings.CENTRAL_API_ENDPOINT
+    check_url = f"{central_url}{api_endpoint}"
     try:
         with httpx.Client(timeout=5.0) as client:
-            response = client.head(settings.CENTRAL_URL)
-            if response.status_code < 500:
-                return {"status": "online", "central_url": settings.CENTRAL_URL}
-            return {"status": "offline", "central_url": settings.CENTRAL_URL}
+            response = client.head(check_url)
+            if response.status_code < 400:
+                return {"status": "online", "central_url": central_url}
+            return {"status": "offline", "central_url": central_url}
     except Exception:
-        return {"status": "offline", "central_url": settings.CENTRAL_URL}
+        return {"status": "offline", "central_url": central_url}
 
 
 @router.get("/sync/status", response_model=schemas.SyncStatus)

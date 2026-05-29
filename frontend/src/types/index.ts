@@ -36,6 +36,21 @@ export interface SystemSettings {
   enable_new_episode_button: boolean;
 }
 
+export interface SystemConfig {
+  central_url: string;
+  central_api_endpoint: string;
+  central_hl7_endpoint: string;
+  central_users_endpoint: string;
+  central_api_username: string;
+  central_api_password: string;
+  health_check_interval: number;
+  downstream_sync_interval: number;
+  upstream_sync_interval: number;
+  max_retries: number;
+}
+
+export type SystemConfigUpdate = Partial<SystemConfig>;
+
 export interface Episode {
   id: number;
   mrn: string;

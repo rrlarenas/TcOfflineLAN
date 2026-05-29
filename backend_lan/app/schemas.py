@@ -182,3 +182,38 @@ class SyncStatus(BaseModel):
 class SystemSettings(BaseModel):
     enable_read_only_mode: bool = True
     enable_new_episode_button: bool = False
+
+
+class SystemConfigEntry(BaseModel):
+    key: str
+    value: Optional[str] = None
+    description: Optional[str] = None
+    updated_at: Optional[datetime] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class SystemConfigUpdate(BaseModel):
+    central_url: Optional[str] = None
+    central_api_endpoint: Optional[str] = None
+    central_hl7_endpoint: Optional[str] = None
+    central_users_endpoint: Optional[str] = None
+    central_api_username: Optional[str] = None
+    central_api_password: Optional[str] = None
+    health_check_interval: Optional[int] = None
+    downstream_sync_interval: Optional[int] = None
+    upstream_sync_interval: Optional[int] = None
+    max_retries: Optional[int] = None
+
+
+class SystemConfigResponse(BaseModel):
+    central_url: str
+    central_api_endpoint: str
+    central_hl7_endpoint: str
+    central_users_endpoint: str
+    central_api_username: str
+    central_api_password: str
+    health_check_interval: int
+    downstream_sync_interval: int
+    upstream_sync_interval: int
+    max_retries: int

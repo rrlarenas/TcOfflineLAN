@@ -1,6 +1,6 @@
 # DOCUMENTACIÓN COMPLETA DE FUNCIONALIDADES
 
-Sistema TrakCare Offline - Versión 1.9.2-rc08
+Sistema TrakCare Offline - Versión 2.1.0-rc3
 
 ---
 
@@ -358,7 +358,7 @@ Ambos backends exponen la misma API REST y tienen las mismas funcionalidades. La
   - Conectividad general
 
 ### Obtención de datos desde central
-- **Archivo:** `app/sync_service.py:198`
+- **Archivo:** `app/sync_service.py`
 - **Función:** `sync_from_central()`
 - **Descripción:** Descarga episodios del servidor central
 - **Features:**
@@ -369,7 +369,7 @@ Ambos backends exponen la misma API REST y tienen las mismas funcionalidades. La
   - Actualización de marca `synced_flag`
 
 ### Procesamiento de datos de pacientes
-- **Archivo:** `app/sync_service.py:224`
+- **Archivo:** `app/sync_service.py`
 - **Función:** `process_patient_data()`
 - **Descripción:** Procesa y almacena datos de pacientes descargados
 - **Features:**
@@ -378,6 +378,19 @@ Ambos backends exponen la misma API REST y tienen las mismas funcionalidades. La
   - Actualización de campos indexados
   - Marca como sincronizado
 
+### Sincronización de usuarios desde central (backend_lan)
+- **Archivos:** `backend_lan/app/sync_service.py`, `backend_lan/app/auth_utils.py`
+- **Clase:** `CentralUserSync`
+- **Función pública:** `sync_users_from_central()`
+- **Descripción:** Importa usuarios del servidor central TrakCare al sistema local. Permite login con credenciales del central sin gestión manual.
+- **Features:**
+  - Detección eficiente de cambios mediante `central_sync_hash` (SHA-256): solo escribe a BD si el usuario cambió
+  - Sanitización de campo `password`: si viene con bytes binarios/NUL, se convierte a base64 antes de almacenar
+  - Hash almacenado en formato `pbkdf2central:{salt_b64}:{hash_b64}`
+  - Verificación PBKDF2-SHA1 / 2500 iteraciones / 32 bytes, compatible con InterSystems TrakCare
+  - Usuarios locales (bcrypt) y usuarios del central (pbkdf2central) coexisten en la misma tabla
+  - El campo `filtros` se inicializa con el username para el primer sync
+
 ---
 
 ## BACKEND LAN - DIFERENCIAS Y CARACTERÍSTICAS ESPECÍFICAS
@@ -385,18 +398,102 @@ Ambos backends exponen la misma API REST y tienen las mismas funcionalidades. La
 ### Autenticación JWT
 
 - **Archivo:** `backend_lan/app/auth_utils.py`
-- **Endpoint de login:** `POST /auth/login`
-- **Body:** `{"username": "...", "password": "..."}`
-- **Respuesta:** `{"access_token": "...", "token_type": "bearer", "user": {...}}`
+- **Endpoint de login:** `POST /auth/token`
+- **Body:** `username` y `password` como form fields (OAuth2 Password Flow)
+- **Respuesta:** `{"access_token": "...", "token_type": "bearer"}`
 - **Expiración:** 480 minutos (configurable con `ACCESS_TOKEN_EXPIRE_MINUTES`)
 - **Seguridad:** El `user_id` del payload JWT se revalida en cada request contra la base de datos. No se confía ciegamente en el token.
 
 ### PostgreSQL con pool de conexiones
 
 - **Archivo:** `backend_lan/app/db.py`
-- **Motor:** SQLAlchemy con `pool_pre_ping=True`
+- **Motor:** SQLAlchemy con `pool_pre_ping=True`, `pool_size=10`, `max_overflow=20`
 - **Soporte:** Múltiples conexiones concurrentes
 - **Timestamps:** Todos los campos DateTime son timezone-aware
+
+### Sincronización de usuarios desde el servidor central
+
+- **Archivos:**
+  - `backend_lan/app/sync_service.py` — clase `CentralUserSync`, función `sync_users_from_central()`
+  - `backend_lan/app/auth_utils.py` — funciones de hash y verificación PBKDF2
+- **Trigger:** Al arrancar el servidor y en cada ciclo de background tasks
+- **Descripción:** Los usuarios del sistema TrakCare central se importan automáticamente. Los profesionales pueden iniciar sesión con sus mismas credenciales del sistema central sin gestión manual de cuentas.
+
+#### Flujo de sincronización de usuarios
+
+1. `CentralUserSync.fetch_users()` hace GET al endpoint de usuarios del API central con autenticación Basic Auth.
+2. Por cada usuario recibido, se calcula un `central_sync_hash` (SHA-256 de username + nombre + password_hash). Si coincide con el almacenado, el usuario se omite sin escritura a BD.
+3. Si hay diferencia, el usuario se actualiza (nombre, activo, contraseña) o se crea si no existe.
+4. El campo `filtros` del usuario se inicializa automáticamente con el username como filtro de API.
+
+#### Algoritmo de password — InterSystems TrakCare PBKDF2
+
+El servidor central usa `PBKDF2-SHA1` con 2500 iteraciones y clave de 32 bytes. El campo `password` en la respuesta del API contiene el output PBKDF2 (en base64 o como bytes binarios según el usuario), y `passwordSalt` contiene el salt en base64.
+
+**Formato almacenado en `hashed_password`:**
+
+```
+pbkdf2central:{salt_base64}:{hash_base64}
+```
+
+**Construccion del hash — `backend_lan/app/auth_utils.py` (linea 54)**
+
+```python
+PBKDF2_PREFIX = "pbkdf2central:"
+
+def make_central_password_hash(raw_password_b64: str, salt_b64: str) -> str:
+    return f"{PBKDF2_PREFIX}{salt_b64}:{raw_password_b64}"
+```
+
+**Sanitizacion en sync — `backend_lan/app/sync_service.py` (linea 316)**
+
+```python
+raw_password_hash = item.get("password") or ""
+salt_b64 = item.get("passwordSalt") or ""
+
+# Algunos usuarios del central envian el campo como bytes binarios (con NUL).
+# Se detecta y se convierte a base64 para almacenamiento seguro en PostgreSQL.
+if "\x00" in raw_password_hash or not raw_password_hash.isascii():
+    raw_password_hash = base64.b64encode(
+        raw_password_hash.encode("latin-1")
+    ).decode("ascii")
+
+stored_password = make_central_password_hash(raw_password_hash, salt_b64)
+```
+
+**Verificacion al hacer login — `backend_lan/app/auth_utils.py` (linea 25)**
+
+Reproduce exactamente el calculo de InterSystems ObjectScript:
+```objectscript
+set output = ##class(%SYSTEM.Encryption).PBKDF2(password, 2500, decodedSalt, 32)
+set base64Test = $SYSTEM.Encryption.Base64Encode(output)
+if (base64PASS = base64Test) { write "Login OK" }
+```
+
+```python
+PBKDF2_ITERATIONS = 2500
+
+def _verify_pbkdf2_central(plain_password: str, stored: str) -> bool:
+    payload = stored[len(PBKDF2_PREFIX):]
+    salt_b64, hash_b64 = payload.split(":", 1)
+    salt = base64.b64decode(salt_b64) if salt_b64 else b""
+    expected = base64.b64decode(hash_b64)
+    derived = hashlib.pbkdf2_hmac(
+        "sha1",
+        plain_password.encode("utf-8"),
+        salt,
+        PBKDF2_ITERATIONS,
+        dklen=32,
+    )
+    return hmac.compare_digest(derived, expected)
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    if hashed_password.startswith(PBKDF2_PREFIX):
+        return _verify_pbkdf2_central(plain_password, hashed_password)
+    return pwd_context.verify(plain_password, hashed_password)  # bcrypt para usuarios locales
+```
+
+> La misma logica existe en `app/auth_utils.py` y `app/sync_service.py` para el backend SQLite.
 
 ### Session-safety en OutboxEvent
 
@@ -413,12 +510,13 @@ Ambos backends exponen la misma API REST y tienen las mismas funcionalidades. La
 - **Archivo:** `backend_lan/app/sync_service.py` — método `check_health()`
 - **Comportamiento:** El health check hace `HEAD` a `CENTRAL_URL` cada `HEALTH_CHECK_INTERVAL` segundos. Si el servidor responde con cualquier código `< 500` (incluido 404), la conexión se considera activa. El logger de httpx se silencia durante esta operación para evitar entradas `INFO: HTTP/1.1 404` en el log cuando la raíz del servidor central no tiene handler.
 
-### Migraciones específicas
+### Migraciones especificas
 
 - **Directorio:** `backend_lan/alembic/versions/`
 - `000_base.py` — Revisión base vacía
 - `001_initial_postgres_schema.py` — Schema completo con PostgreSQL y timestamps timezone-aware
 - `002_fix_data_json_to_text.py` — Corrección de tipo de columna `data_json`
+- `003_add_central_sync_hash_to_users.py` — Agrega `central_sync_hash` para detección eficiente de cambios en sync
 
 ---
 

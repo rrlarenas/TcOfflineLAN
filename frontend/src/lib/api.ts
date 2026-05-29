@@ -11,7 +11,9 @@ import type {
   ClinicalNoteCreateRequest,
   SyncStatus,
   HealthResponse,
-  SystemSettings
+  SystemSettings,
+  SystemConfig,
+  SystemConfigUpdate,
 } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
@@ -220,6 +222,19 @@ export const api = {
 
   async getUniqueEpisodeTypes(): Promise<string[]> {
     const response = await fetchWithAuth('/episodes/types/unique');
+    return response.json();
+  },
+
+  async getSystemConfig(): Promise<SystemConfig> {
+    const response = await fetchWithAuth('/admin/config');
+    return response.json();
+  },
+
+  async updateSystemConfig(data: SystemConfigUpdate): Promise<SystemConfig> {
+    const response = await fetchWithAuth('/admin/config', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
     return response.json();
   },
 };

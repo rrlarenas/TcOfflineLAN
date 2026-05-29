@@ -1,4 +1,4 @@
-# TrakCare Offline Local v1.9.2-rc08
+# TrakCare Offline Local v2.1.0-rc3
 
 Sistema offline para gestión de episodios clínicos con sincronización bidireccional con servidor central.
 
@@ -14,8 +14,26 @@ Sistema offline para gestión de episodios clínicos con sincronización bidirec
 
 ## Arquitectura
 
-El sistema utiliza una **arquitectura de tabla única** para máxima simplicidad:
+El sistema utiliza una **arquitectura de tabla única** para máxima simplicidad y soporta dos variantes de backend:
 
+| Componente | Modo | Base de Datos | Autenticación | Usuarios |
+|---|---|---|---|---|
+| `app/` | Por estación | SQLite | Basic Auth | 1 estación |
+| `backend_lan/` | Red local | PostgreSQL | JWT Bearer | Multi-usuario |
+
+### Backend `app/` (por estación)
+- SQLite local, sin dependencias externas
+- Basic Auth (usuario:contraseña en base64)
+- Ideal para instalación de escritorio individual
+
+### Backend `backend_lan/` (red local)
+- PostgreSQL con pool de conexiones (multi-usuario concurrente)
+- OAuth2 Password Flow con tokens JWT (HS256, 480 min)
+- **Sincronización de usuarios desde el servidor central**: los usuarios del sistema TrakCare central se importan automáticamente y sus contraseñas se verifican usando el mismo algoritmo PBKDF2 del central (ver sección [Sincronización de Usuarios](#sincronización-de-usuarios-backend-lan))
+- Session-safety: cada evento outbox registra el `author_user_id` para trazabilidad correcta del profesional en HL7
+- Despliegue recomendado: Docker (ver `backend_lan/docker-compose.yml`)
+
+### Patrones comunes a ambos backends
 - Tabla `episodes` con campos indexados + JSON completo en `data_json`
 - Sincronización rápida mediante upsert
 - Historia completa del paciente incluida en el JSON (Antecedentes)
@@ -26,7 +44,105 @@ El sistema utiliza una **arquitectura de tabla única** para máxima simplicidad
 
 - Python 3.12+
 - Node.js 18+
-- SQLite (incluido)
+- SQLite (incluido en `app/`) o PostgreSQL (para `backend_lan/`)
+
+## Sincronización de Usuarios (backend_lan)
+
+El `backend_lan` descarga y sincroniza automáticamente los usuarios del servidor central TrakCare. Esto permite que los profesionales de salud inicien sesión con sus mismas credenciales del sistema central sin gestión manual de cuentas.
+
+### Flujo de sincronización
+
+1. Al arrancar y cada `DOWNSTREAM_SYNC_INTERVAL` segundos, `sync_users_from_central()` consulta el endpoint de usuarios del API central.
+2. Por cada usuario recibido, se calcula un hash de cambio (`central_sync_hash`). Si no cambió, se omite el usuario (sin escritura a BD).
+3. Si hay diferencia, se actualiza (o crea) el usuario local con nombre, estado activo y contraseña hasheada.
+
+### Formato del hash almacenado
+
+El campo `hashed_password` en la tabla `users` puede tener dos formatos:
+
+| Formato | Descripcion | Ejemplo |
+|---|---|---|
+| `$2b$...` (bcrypt) | Usuarios creados localmente por un admin | `$2b$12$...` |
+| `pbkdf2central:...` | Usuarios importados desde el central | ver abajo |
+
+**Formato `pbkdf2central`:**
+
+```
+pbkdf2central:{salt_base64}:{hash_base64}
+```
+
+- `{salt_base64}`: El salt PBKDF2 tal como lo envía el central (campo `passwordSalt`), ya en base64.
+- `{hash_base64}`: El output PBKDF2 tal como lo envía el central (campo `password`), ya en base64. Si el central lo envía como bytes binarios (latin-1 con NUL), se convierte a base64 antes de almacenar.
+
+### Como se obtiene el hash — `backend_lan/app/sync_service.py`
+
+```python
+# En process_users() — backend_lan/app/sync_service.py
+
+raw_password_hash = item.get("password") or ""   # output PBKDF2 del central
+salt_b64 = item.get("passwordSalt") or ""         # salt en base64
+
+# Si el campo viene como bytes binarios (NUL o non-ASCII), se convierte a base64
+if "\x00" in raw_password_hash or not raw_password_hash.isascii():
+    raw_password_hash = base64.b64encode(
+        raw_password_hash.encode("latin-1")
+    ).decode("ascii")
+
+stored_password = make_central_password_hash(raw_password_hash, salt_b64)
+# → "pbkdf2central:{salt_b64}:{raw_password_hash}"
+```
+
+### Como se construye el string almacenado — `backend_lan/app/auth_utils.py`
+
+```python
+# make_central_password_hash() — backend_lan/app/auth_utils.py
+
+PBKDF2_PREFIX = "pbkdf2central:"
+
+def make_central_password_hash(raw_password_b64: str, salt_b64: str) -> str:
+    return f"{PBKDF2_PREFIX}{salt_b64}:{raw_password_b64}"
+```
+
+### Como se verifica el password al hacer login — `backend_lan/app/auth_utils.py`
+
+El algoritmo reproduce exactamente el calculo de InterSystems TrakCare:
+
+```python
+# _verify_pbkdf2_central() — backend_lan/app/auth_utils.py
+# Equivalente al snippet de TrakCare ObjectScript:
+#   set output = ##class(%SYSTEM.Encryption).PBKDF2(password, 2500, decodedSalt, 32)
+#   set base64Test = $SYSTEM.Encryption.Base64Encode(output)
+#   if (base64PASS = base64Test) { write "Login OK" }
+
+PBKDF2_ITERATIONS = 2500
+
+def _verify_pbkdf2_central(plain_password: str, stored: str) -> bool:
+    payload = stored[len(PBKDF2_PREFIX):]
+    salt_b64, hash_b64 = payload.split(":", 1)
+    salt = base64.b64decode(salt_b64) if salt_b64 else b""
+    expected = base64.b64decode(hash_b64)
+    derived = hashlib.pbkdf2_hmac(
+        "sha1",
+        plain_password.encode("utf-8"),
+        salt,
+        PBKDF2_ITERATIONS,
+        dklen=32,
+    )
+    return hmac.compare_digest(derived, expected)
+```
+
+El dispatcher `verify_password()` elige automaticamente el metodo segun el prefijo del hash almacenado:
+
+```python
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    if hashed_password.startswith(PBKDF2_PREFIX):
+        return _verify_pbkdf2_central(plain_password, hashed_password)
+    return pwd_context.verify(plain_password, hashed_password)  # bcrypt
+```
+
+> Los mismos archivos existen en `app/auth_utils.py` y `app/sync_service.py` para el backend SQLite, con logica identica.
+
+---
 
 ## Instalación
 
@@ -345,7 +461,7 @@ alembic upgrade head
 alembic history
 ```
 
-**Migraciones actuales:**
+**Migraciones `app/` (SQLite):**
 1. `001_initial_simplified.py` - Estructura inicial de base de datos
 2. `002_add_profesional_field.py` - Añade campo profesional a episodios
 3. `003_make_hl7_payload_nullable.py` - hl7_payload nullable en outbox
@@ -357,6 +473,13 @@ alembic history
 9. `009_add_last_login_field.py` - Agrega campo last_login a tabla users
 10. `010_make_run_optional.py` - Documenta opcionalidad del campo RUN
 11. `011_add_author_user_id_to_outbox_events.py` - Agrega author_user_id (FK a users) en outbox_events para identificar al profesional en mensajes HL7
+12. `012_add_central_sync_hash_to_users.py` - Agrega central_sync_hash a users para detección eficiente de cambios en sync de usuarios
+
+**Migraciones `backend_lan/` (PostgreSQL):**
+1. `000_base.py` - Revisión base vacía
+2. `001_initial_postgres_schema.py` - Schema completo con timestamps timezone-aware
+3. `002_fix_data_json_to_text.py` - Corrección tipo columna data_json
+4. `003_add_central_sync_hash_to_users.py` - Agrega central_sync_hash a users
 
 ### Variables de Entorno
 

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { api } from '../lib/api';
 import { auth } from '../lib/auth';
 import { useLanguage } from '../contexts/LanguageContext';
-import type { User } from '../types';
+import type { User, SystemConfig } from '../types';
 
 interface UserSettingsModalProps {
   isOpen: boolean;
@@ -43,9 +43,22 @@ function serializeFiltros(f: FiltrosState): string {
   return parts.join('&');
 }
 
+const DEFAULT_CONFIG: SystemConfig = {
+  central_url: '',
+  central_api_endpoint: '',
+  central_hl7_endpoint: '',
+  central_users_endpoint: '',
+  central_api_username: '',
+  central_api_password: '',
+  health_check_interval: 8,
+  downstream_sync_interval: 60,
+  upstream_sync_interval: 10,
+  max_retries: 5,
+};
+
 export function UserSettingsModal({ isOpen, onClose, user, onUserUpdated }: UserSettingsModalProps) {
   const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState<'settings' | 'filters' | 'users'>('settings');
+  const [activeTab, setActiveTab] = useState<'settings' | 'filters' | 'users' | 'system'>('settings');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [nombre, setNombre] = useState(user.nombre || '');
@@ -63,6 +76,11 @@ export function UserSettingsModal({ isOpen, onClose, user, onUserUpdated }: User
   const [newIsAdmin, setNewIsAdmin] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
 
+  const [systemConfig, setSystemConfig] = useState<SystemConfig>(DEFAULT_CONFIG);
+  const [originalSystemConfig, setOriginalSystemConfig] = useState<SystemConfig>(DEFAULT_CONFIG);
+  const [isLoadingConfig, setIsLoadingConfig] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
   useEffect(() => {
     if (isOpen) {
       setActiveTab('settings');
@@ -76,9 +94,41 @@ export function UserSettingsModal({ isOpen, onClose, user, onUserUpdated }: User
 
       if (user.is_admin) {
         loadUsers();
+        loadSystemConfig();
       }
     }
   }, [isOpen, user.is_admin]);
+
+  const loadSystemConfig = async () => {
+    setIsLoadingConfig(true);
+    try {
+      const cfg = await api.getSystemConfig();
+      setSystemConfig(cfg);
+      setOriginalSystemConfig(cfg);
+    } catch (err) {
+      console.error('Error loading system config:', err);
+    } finally {
+      setIsLoadingConfig(false);
+    }
+  };
+
+  const handleSaveSystemConfig = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    setIsSubmitting(true);
+    try {
+      const updated = await api.updateSystemConfig(systemConfig);
+      setSystemConfig(updated);
+      setOriginalSystemConfig(updated);
+      setSuccess('Configuración del sistema actualizada correctamente');
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err: any) {
+      setError(err.message || 'Error al guardar la configuración');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const loadUsers = async () => {
     try {
@@ -221,16 +271,19 @@ export function UserSettingsModal({ isOpen, onClose, user, onUserUpdated }: User
     onClose();
   };
 
-  const tabs: Array<{ id: 'settings' | 'filters' | 'users'; label: string; adminOnly?: boolean }> = [
+  const tabs: Array<{ id: 'settings' | 'filters' | 'users' | 'system'; label: string; adminOnly?: boolean }> = [
     { id: 'settings', label: 'Configuración' },
     { id: 'filters', label: 'Filtros' },
-    ...(user.is_admin ? [{ id: 'users' as const, label: 'Gestión de Usuarios', adminOnly: true }] : []),
+    ...(user.is_admin ? [
+      { id: 'users' as const, label: 'Usuarios', adminOnly: true },
+      { id: 'system' as const, label: 'Sistema', adminOnly: true },
+    ] : []),
   ];
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-2xl w-full mx-4 border border-gray-200 dark:border-gray-800">
-        <div className="p-6">
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-2xl w-full mx-4 border border-gray-200 dark:border-gray-800 max-h-[90vh] flex flex-col">
+        <div className="p-6 overflow-y-auto flex-1">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-50">Configuración</h2>
             <button
@@ -522,6 +575,228 @@ export function UserSettingsModal({ isOpen, onClose, user, onUserUpdated }: User
                 </button>
               </div>
             </form>
+          )}
+
+          {/* --- Tab: Sistema --- */}
+          {activeTab === 'system' && user.is_admin && (
+            <div className="space-y-1">
+              {isLoadingConfig ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                  <span className="ml-3 text-sm text-gray-500 dark:text-gray-400">Cargando configuración...</span>
+                </div>
+              ) : (
+                <form onSubmit={handleSaveSystemConfig} className="space-y-4">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 pb-1">
+                    Estos valores sobrescriben las variables de entorno del servidor. Los cambios toman efecto en el siguiente ciclo de sincronización.
+                  </p>
+
+                  {/* Servidor central */}
+                  <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                    <div className="px-4 py-2 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+                      <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Servidor Central</span>
+                    </div>
+                    <div className="divide-y divide-gray-100 dark:divide-gray-800 p-4 space-y-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">URL Base</label>
+                        <input
+                          type="text"
+                          value={systemConfig.central_url}
+                          onChange={e => setSystemConfig(c => ({ ...c, central_url: e.target.value }))}
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+                          placeholder="http://servidor.central.cl"
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                      <div className="pt-3">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Endpoint Episodios</label>
+                        <input
+                          type="text"
+                          value={systemConfig.central_api_endpoint}
+                          onChange={e => setSystemConfig(c => ({ ...c, central_api_endpoint: e.target.value }))}
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+                          placeholder="/ruta/getData"
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                      <div className="pt-3">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Endpoint HL7 Inbound</label>
+                        <input
+                          type="text"
+                          value={systemConfig.central_hl7_endpoint}
+                          onChange={e => setSystemConfig(c => ({ ...c, central_hl7_endpoint: e.target.value }))}
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+                          placeholder="/ruta/hl7inbound"
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                      <div className="pt-3">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Endpoint Usuarios</label>
+                        <input
+                          type="text"
+                          value={systemConfig.central_users_endpoint}
+                          onChange={e => setSystemConfig(c => ({ ...c, central_users_endpoint: e.target.value }))}
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+                          placeholder="/ruta/getUsers"
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Credenciales */}
+                  <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                    <div className="px-4 py-2 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+                      <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Credenciales API Central</span>
+                    </div>
+                    <div className="p-4 space-y-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Usuario</label>
+                        <input
+                          type="text"
+                          value={systemConfig.central_api_username}
+                          onChange={e => setSystemConfig(c => ({ ...c, central_api_username: e.target.value }))}
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="usuario"
+                          disabled={isSubmitting}
+                          autoComplete="off"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Contraseña</label>
+                        <div className="relative">
+                          <input
+                            type={showPassword ? 'text' : 'password'}
+                            value={systemConfig.central_api_password}
+                            onChange={e => setSystemConfig(c => ({ ...c, central_api_password: e.target.value }))}
+                            className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="contraseña"
+                            disabled={isSubmitting}
+                            autoComplete="new-password"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(v => !v)}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                            tabIndex={-1}
+                          >
+                            {showPassword ? (
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                              </svg>
+                            ) : (
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                              </svg>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Intervalos */}
+                  <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                    <div className="px-4 py-2 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+                      <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Tiempos de Sincronizacion</span>
+                    </div>
+                    <div className="p-4 grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                          Verificacion conectividad <span className="text-gray-400 font-normal">(seg)</span>
+                        </label>
+                        <input
+                          type="number"
+                          min={3}
+                          max={60}
+                          value={systemConfig.health_check_interval}
+                          onChange={e => setSystemConfig(c => ({ ...c, health_check_interval: Number(e.target.value) }))}
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                          Sync descendente <span className="text-gray-400 font-normal">(seg)</span>
+                        </label>
+                        <input
+                          type="number"
+                          min={10}
+                          max={3600}
+                          value={systemConfig.downstream_sync_interval}
+                          onChange={e => setSystemConfig(c => ({ ...c, downstream_sync_interval: Number(e.target.value) }))}
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                          Sync ascendente HL7 <span className="text-gray-400 font-normal">(seg)</span>
+                        </label>
+                        <input
+                          type="number"
+                          min={5}
+                          max={3600}
+                          value={systemConfig.upstream_sync_interval}
+                          onChange={e => setSystemConfig(c => ({ ...c, upstream_sync_interval: Number(e.target.value) }))}
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                          Max. reintentos HL7
+                        </label>
+                        <input
+                          type="number"
+                          min={1}
+                          max={20}
+                          value={systemConfig.max_retries}
+                          onChange={e => setSystemConfig(c => ({ ...c, max_retries: Number(e.target.value) }))}
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {error && (
+                    <div className="p-3 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-900 rounded-md">
+                      <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
+                    </div>
+                  )}
+
+                  {success && (
+                    <div className="p-3 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-900 rounded-md">
+                      <p className="text-sm text-green-800 dark:text-green-200">{success}</p>
+                    </div>
+                  )}
+
+                  <div className="flex gap-3 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSystemConfig(originalSystemConfig);
+                        setError('');
+                        setSuccess('');
+                      }}
+                      className="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors text-sm"
+                      disabled={isSubmitting}
+                    >
+                      Descartar cambios
+                    </button>
+                    <button
+                      type="submit"
+                      className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? 'Guardando...' : 'Guardar configuracion'}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
           )}
 
           {/* --- Tab: Gestión de Usuarios --- */}

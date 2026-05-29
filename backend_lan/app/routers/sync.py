@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+import httpx
 from app.db import get_db
 from app.auth_utils import get_current_active_user
 from app import models
-from app.sync_service import get_health_checker, SyncStateManager, sync_from_central
+from app.sync_service import SyncStateManager, sync_from_central, _load_runtime_config
 from app.outbox_processor import OutboxProcessor
 from app.settings import settings
 import asyncio
@@ -11,12 +12,32 @@ import asyncio
 router = APIRouter(prefix="/sync", tags=["sync"])
 
 
+def _get_processor() -> OutboxProcessor:
+    cfg = _load_runtime_config()
+    central_url = cfg.central_url if cfg else settings.CENTRAL_URL
+    return OutboxProcessor(central_url)
+
+
+def _check_central_online(db: Session) -> bool:
+    from app.routers.admin import get_runtime_config
+    cfg = get_runtime_config(db)
+    central_url = cfg.central_url if cfg else settings.CENTRAL_URL
+    api_endpoint = cfg.central_api_endpoint if cfg else settings.CENTRAL_API_ENDPOINT
+    check_url = f"{central_url}{api_endpoint}"
+    try:
+        with httpx.Client(timeout=5.0) as client:
+            response = client.head(check_url)
+            return response.status_code < 400
+    except Exception:
+        return False
+
+
 @router.post("/trigger")
 async def trigger_sync_manually(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_active_user)
 ):
-    processor = OutboxProcessor(settings.CENTRAL_URL)
+    processor = _get_processor()
     pending_count = db.query(models.OutboxEvent).filter(models.OutboxEvent.status == "pending").count()
 
     async def run_sync():
@@ -31,7 +52,7 @@ async def retry_failed_events(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_active_user)
 ):
-    processor = OutboxProcessor(settings.CENTRAL_URL)
+    processor = _get_processor()
     failed_count = db.query(models.OutboxEvent).filter(models.OutboxEvent.status == "failed").count()
 
     async def run_retry():
@@ -43,10 +64,12 @@ async def retry_failed_events(
 
 
 @router.get("/connection-status")
-def get_connection_status(current_user: models.User = Depends(get_current_active_user)):
-    checker = get_health_checker()
-    status = checker.get_status()
-    return {"is_online": status["connected"], "last_check": status["last_check"]}
+def get_connection_status(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_active_user),
+):
+    is_online = _check_central_online(db)
+    return {"is_online": is_online, "last_check": None}
 
 
 @router.get("/stats")
@@ -55,9 +78,8 @@ def get_sync_stats(
     current_user: models.User = Depends(get_current_active_user)
 ):
     stats = SyncStateManager.get_sync_stats(db)
-    checker = get_health_checker()
-    status = checker.get_status()
-    return {**stats, "connection": {"is_online": status["connected"], "last_check": status["last_check"]}}
+    is_online = _check_central_online(db)
+    return {**stats, "connection": {"is_online": is_online, "last_check": None}}
 
 
 @router.post("/from-central")

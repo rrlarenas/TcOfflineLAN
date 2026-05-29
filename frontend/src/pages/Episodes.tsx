@@ -10,6 +10,7 @@ import { formatTimeAgo } from '../lib/timeAgo';
 import type { Episode, EpisodeType, SyncStats } from '../types';
 
 const EPISODES_REFRESH_INTERVAL = 15000; // 15 segundos
+const STATS_REFRESH_INTERVAL = 8000; // 8 segundos — alineado con health check
 
 export function Episodes() {
   const navigate = useNavigate();
@@ -105,7 +106,7 @@ export function Episodes() {
     };
 
     loadSyncStats();
-    const interval = setInterval(loadSyncStats, EPISODES_REFRESH_INTERVAL);
+    const interval = setInterval(loadSyncStats, STATS_REFRESH_INTERVAL);
 
     return () => clearInterval(interval);
   }, []);

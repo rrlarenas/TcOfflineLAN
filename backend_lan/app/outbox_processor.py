@@ -27,6 +27,10 @@ class OutboxProcessor:
         self.hl7_builder = HL7MessageBuilder()
         self.max_retries = settings.MAX_RETRIES
 
+    def _get_runtime_config(self):
+        from app.sync_service import _load_runtime_config
+        return _load_runtime_config()
+
     def _get_event_author_username(self, event: models.OutboxEvent, db: Session) -> Optional[str]:
         """
         Resolve the HL7 OBR.24 user field from the event's stored author_user_id.
@@ -87,8 +91,15 @@ class OutboxProcessor:
             if not msg_type:
                 msg_type = self.extract_message_type(message)
 
-            api_url = f"{self.central_url}{settings.CENTRAL_HL7_ENDPOINT}"
-            auth = (settings.CENTRAL_API_USERNAME, settings.CENTRAL_API_PASSWORD)
+            cfg = self._get_runtime_config()
+            central_url = cfg.central_url if cfg else self.central_url
+            hl7_endpoint = cfg.central_hl7_endpoint if cfg else settings.CENTRAL_HL7_ENDPOINT
+            api_user = cfg.central_api_username if cfg else settings.CENTRAL_API_USERNAME
+            api_pass = cfg.central_api_password if cfg else settings.CENTRAL_API_PASSWORD
+            self.max_retries = cfg.max_retries if cfg else settings.MAX_RETRIES
+
+            api_url = f"{central_url}{hl7_endpoint}"
+            auth = (api_user, api_pass)
 
             payload = {
                 "msg": message,
@@ -98,7 +109,7 @@ class OutboxProcessor:
 
             logger.info(f"=== SENDING HL7 MESSAGE ===")
             logger.info(f"URL: {api_url}")
-            logger.info(f"Auth: {settings.CENTRAL_API_USERNAME}")
+            logger.info(f"Auth: {api_user}")
             logger.info(f"Message Type: {msg_type}")
             logger.info(f"Complete JSON Payload:\n{json.dumps(payload, indent=2, ensure_ascii=False)}")
             logger.info("=" * 50)

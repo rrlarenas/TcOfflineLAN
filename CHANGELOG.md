@@ -1,5 +1,24 @@
 # Changelog
 
+## [2.1.0-rc3] - 2026-05-27
+
+### Corregido
+
+#### Sincronización de Usuarios desde Central — Error NUL en Password
+
+- **Problema**: Al sincronizar usuarios desde el sistema central, el campo `password` de algunos usuarios (ej: `ysilva`) contenía bytes binarios crudos del output PBKDF2, incluyendo caracteres NUL (`0x00`). PostgreSQL rechaza strings con caracteres NUL, causando error `A string literal cannot contain NUL (0x00) characters` y deteniendo el proceso de sync.
+- **Causa**: El API central puede enviar el campo `password` en dos formatos distintos según el usuario:
+  - Base64 limpio (ASCII) — la mayoría de los usuarios
+  - Bytes binarios raw PBKDF2 codificados en latin-1, que incluyen NUL y caracteres no ASCII
+- **Solución**: En `process_users()` de ambos backends (`backend_lan/app/sync_service.py` y `app/sync_service.py`), se detecta si el campo `password` contiene caracteres NUL o no-ASCII. Si es así, se convierte a base64 antes de almacenarlo. Si ya es base64 limpio, se almacena sin modificar.
+- **Algoritmo de verificacion**: Confirmado que el central usa `PBKDF2(password, 2500 iters, decoded_salt, 32 bytes)` con SHA1. El hash almacenado tiene el formato `pbkdf2central:{salt_b64}:{hash_b64}` y la verificacion local re-deriva PBKDF2 y compara con `hmac.compare_digest`.
+
+#### Archivos Modificados
+- `backend_lan/app/sync_service.py`: Sanitizacion de campo `password` en `process_users()`
+- `app/sync_service.py`: Mismo fix en backend SQLite
+
+---
+
 ## [1.9.2-rc08] - 2026-05-19
 
 ### Agregado

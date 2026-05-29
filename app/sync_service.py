@@ -30,7 +30,7 @@ class CentralHealthChecker:
         try:
             async with httpx.AsyncClient(timeout=5.0) as client:
                 response = await client.head(self.central_url)
-                if response.status_code < 500:
+                if response.status_code < 400:
                     self.consecutive_failures = 0
                     self.consecutive_successes += 1
                     if self.consecutive_successes >= 2:
@@ -51,6 +51,11 @@ class CentralHealthChecker:
         """Start continuous monitoring loop."""
         logger.info(f"Starting health monitoring every {self.check_interval}s")
         while True:
+            cfg = _load_runtime_config()
+            if cfg and cfg.central_url:
+                api_endpoint = cfg.central_api_endpoint if cfg else settings.CENTRAL_API_ENDPOINT
+                self.central_url = f"{cfg.central_url}{api_endpoint}"
+                self.check_interval = cfg.health_check_interval
             await self.check_health()
             await asyncio.sleep(self.check_interval)
 
@@ -166,6 +171,18 @@ def get_health_checker() -> CentralHealthChecker:
     return _health_checker_instance
 
 
+def _load_runtime_config():
+    """Load operational config from DB, falling back to .env values."""
+    from app.routers.admin import get_runtime_config
+    db = SessionLocal()
+    try:
+        return get_runtime_config(db)
+    except Exception:
+        return None
+    finally:
+        db.close()
+
+
 class CentralDataSync:
     """Service to sync patient data from central server."""
 
@@ -175,8 +192,14 @@ class CentralDataSync:
     async def fetch_patient_data(self, user_filtros: str = "") -> Optional[List[dict]]:
         """Fetch patient data from central API with Basic Auth and user filters."""
         try:
-            api_url = f"{self.central_url}{settings.CENTRAL_API_ENDPOINT}"
-            auth = (settings.CENTRAL_API_USERNAME, settings.CENTRAL_API_PASSWORD)
+            cfg = _load_runtime_config()
+            central_url = cfg.central_url if cfg else self.central_url
+            api_endpoint = cfg.central_api_endpoint if cfg else settings.CENTRAL_API_ENDPOINT
+            api_user = cfg.central_api_username if cfg else settings.CENTRAL_API_USERNAME
+            api_pass = cfg.central_api_password if cfg else settings.CENTRAL_API_PASSWORD
+
+            api_url = f"{central_url}{api_endpoint}"
+            auth = (api_user, api_pass)
 
             if user_filtros:
                 api_url = f"{api_url}?{user_filtros}"
@@ -316,8 +339,14 @@ class CentralUserSync:
 
     async def fetch_users(self) -> Optional[List[dict]]:
         try:
-            api_url = f"{self.central_url}{settings.CENTRAL_USERS_ENDPOINT}"
-            auth = (settings.CENTRAL_API_USERNAME, settings.CENTRAL_API_PASSWORD)
+            cfg = _load_runtime_config()
+            central_url = cfg.central_url if cfg else self.central_url
+            users_endpoint = cfg.central_users_endpoint if cfg else settings.CENTRAL_USERS_ENDPOINT
+            api_user = cfg.central_api_username if cfg else settings.CENTRAL_API_USERNAME
+            api_pass = cfg.central_api_password if cfg else settings.CENTRAL_API_PASSWORD
+
+            api_url = f"{central_url}{users_endpoint}"
+            auth = (api_user, api_pass)
             logger.info(f"Fetching users from: {api_url}")
             async with httpx.AsyncClient(timeout=30.0) as client:
                 response = await client.get(api_url, auth=auth)
@@ -395,7 +424,9 @@ async def sync_users_from_central():
     """Sync users from central server into local database."""
     db = SessionLocal()
     try:
-        syncer = CentralUserSync(settings.CENTRAL_URL)
+        cfg = _load_runtime_config()
+        central_url = cfg.central_url if cfg else settings.CENTRAL_URL
+        syncer = CentralUserSync(central_url)
         users = await syncer.fetch_users()
         if users is not None:
             syncer.process_users(db, users)
@@ -417,7 +448,9 @@ async def sync_from_central(user_filtros: str = ""):
     """Main function to sync data from central server with user-specific filters."""
     db = SessionLocal()
     try:
-        sync = CentralDataSync(settings.CENTRAL_URL)
+        cfg = _load_runtime_config()
+        central_url = cfg.central_url if cfg else settings.CENTRAL_URL
+        sync = CentralDataSync(central_url)
         patients = await sync.fetch_patient_data(user_filtros)
 
         if patients:

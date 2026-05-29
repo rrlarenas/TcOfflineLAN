@@ -22,23 +22,35 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
 
+def _b64decode_padded(s: str) -> bytes:
+    """Decode base64 string, adding padding if needed."""
+    s = s.strip()
+    padding = 4 - len(s) % 4
+    if padding != 4:
+        s += "=" * padding
+    return base64.b64decode(s)
+
+
 def _verify_pbkdf2_central(plain_password: str, stored: str) -> bool:
     """Verify against InterSystems TrakCare PBKDF2-SHA1 hash.
     stored format: pbkdf2central:<base64_salt>:<base64_hash>
     Re-derives locally with PBKDF2-SHA1 / 2500 iters / dkLen=32 and compares.
     """
-    payload = stored[len(PBKDF2_PREFIX):]
-    salt_b64, hash_b64 = payload.split(":", 1)
-    salt = base64.b64decode(salt_b64) if salt_b64 else b""
-    expected = base64.b64decode(hash_b64)
-    derived = hashlib.pbkdf2_hmac(
-        "sha1",
-        plain_password.encode("utf-8"),
-        salt,
-        PBKDF2_ITERATIONS,
-        dklen=32,
-    )
-    return hmac.compare_digest(derived, expected)
+    try:
+        payload = stored[len(PBKDF2_PREFIX):]
+        salt_b64, hash_b64 = payload.split(":", 1)
+        salt = _b64decode_padded(salt_b64) if salt_b64 else b""
+        expected = _b64decode_padded(hash_b64)
+        derived = hashlib.pbkdf2_hmac(
+            "sha1",
+            plain_password.encode("utf-8"),
+            salt,
+            PBKDF2_ITERATIONS,
+            dklen=32,
+        )
+        return hmac.compare_digest(derived, expected)
+    except Exception:
+        return False
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
