@@ -1,17 +1,24 @@
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '../lib/api';
 
+export type ConnectionStatus = 'online' | 'warning' | 'offline';
+
 export function useConnectionStatus(intervalSeconds = 8) {
-  const [isOnline, setIsOnline] = useState(true);
+  const [status, setStatus] = useState<ConnectionStatus>('online');
   const [lastCheck, setLastCheck] = useState<Date | null>(null);
 
   const checkStatus = useCallback(async () => {
     try {
       const centralHealth = await api.getCentralHealth();
-      setIsOnline(centralHealth.status === 'online');
+      const s = centralHealth.status;
+      if (s === 'online' || s === 'warning' || s === 'offline') {
+        setStatus(s as ConnectionStatus);
+      } else {
+        setStatus('offline');
+      }
       setLastCheck(new Date());
-    } catch (error) {
-      setIsOnline(false);
+    } catch {
+      setStatus('offline');
       setLastCheck(new Date());
     }
   }, []);
@@ -27,11 +34,11 @@ export function useConnectionStatus(intervalSeconds = 8) {
 
   useEffect(() => {
     checkStatus();
-
     const interval = setInterval(checkStatus, intervalSeconds * 1000);
-
     return () => clearInterval(interval);
   }, [checkStatus, intervalSeconds]);
 
-  return { isOnline, lastCheck, checkStatus, syncFromCentral };
+  const isOnline = status === 'online';
+
+  return { status, isOnline, lastCheck, checkStatus, syncFromCentral };
 }

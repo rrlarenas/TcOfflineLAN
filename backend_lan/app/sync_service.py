@@ -196,17 +196,28 @@ class CentralDataSync:
                 api_url = f"{api_url}?{user_filtros}"
 
             logger.info(f"Fetching data from: {api_url}")
-            async with httpx.AsyncClient(timeout=30.0) as client:
-                response = await client.get(api_url, auth=auth)
-                if response.status_code == 200:
-                    data = response.json()
-                    if isinstance(data, list):
-                        return data
-                    logger.error(f"Expected list, got: {type(data)}")
-                    return None
-                else:
-                    logger.error(f"Failed to fetch data: {response.status_code}")
-                    return None
+            for verify in (True, False):
+                try:
+                    async with httpx.AsyncClient(timeout=30.0, verify=verify) as client:
+                        response = await client.get(api_url, auth=auth)
+                    if not verify:
+                        logger.warning("GET patient data succeeded with SSL verification disabled (self-signed certificate)")
+                    if response.status_code == 200:
+                        data = response.json()
+                        if isinstance(data, list):
+                            return data
+                        logger.error(f"Expected list, got: {type(data)}")
+                        return None
+                    else:
+                        logger.error(f"Failed to fetch data: {response.status_code}")
+                        return None
+                except Exception as e:
+                    error_str = str(e).lower()
+                    if verify and ("ssl" in error_str or "certificate" in error_str):
+                        logger.warning(f"SSL error on GET patient data, retrying with verify=False: {e}")
+                        continue
+                    raise
+            return None
         except Exception as e:
             logger.error(f"Error fetching data from central: {e}")
             return None
@@ -319,17 +330,28 @@ class CentralUserSync:
             api_url = f"{central_url}{users_endpoint}"
             auth = (api_user, api_pass)
             logger.info(f"Fetching users from: {api_url}")
-            async with httpx.AsyncClient(timeout=30.0) as client:
-                response = await client.get(api_url, auth=auth)
-                if response.status_code == 200:
-                    data = response.json()
-                    if isinstance(data, list):
-                        return data
-                    logger.error(f"Expected list from users endpoint, got: {type(data)}")
-                    return None
-                else:
-                    logger.error(f"Failed to fetch users: {response.status_code}")
-                    return None
+            for verify in (True, False):
+                try:
+                    async with httpx.AsyncClient(timeout=30.0, verify=verify) as client:
+                        response = await client.get(api_url, auth=auth)
+                    if not verify:
+                        logger.warning("GET users succeeded with SSL verification disabled (self-signed certificate)")
+                    if response.status_code == 200:
+                        data = response.json()
+                        if isinstance(data, list):
+                            return data
+                        logger.error(f"Expected list from users endpoint, got: {type(data)}")
+                        return None
+                    else:
+                        logger.error(f"Failed to fetch users: {response.status_code}")
+                        return None
+                except Exception as e:
+                    error_str = str(e).lower()
+                    if verify and ("ssl" in error_str or "certificate" in error_str):
+                        logger.warning(f"SSL error on GET users, retrying with verify=False: {e}")
+                        continue
+                    raise
+            return None
         except Exception as e:
             logger.error(f"Error fetching users from central: {e}")
             return None

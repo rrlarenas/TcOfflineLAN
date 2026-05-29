@@ -9,7 +9,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 
 export function Header() {
   const navigate = useNavigate();
-  const { isOnline } = useConnectionStatus();
+  const { status } = useConnectionStatus();
   const [showModal, setShowModal] = useState(false);
   const { user: currentUser, updateUser } = useUser();
   const storedUser = auth.getUser();
@@ -32,6 +32,31 @@ export function Header() {
     setShowLanguageMenu(false);
   };
 
+  const connectionBadge = () => {
+    if (status === 'online') {
+      return (
+        <span className="badge-online">
+          <span className="w-2 h-2 bg-green-500 rounded-full mr-1.5"></span>
+          ONLINE
+        </span>
+      );
+    }
+    if (status === 'warning') {
+      return (
+        <span className="badge-warning" title={t.header.sslWarning}>
+          <span className="w-2 h-2 bg-yellow-500 rounded-full mr-1.5"></span>
+          WARNING
+        </span>
+      );
+    }
+    return (
+      <span className="badge-offline">
+        <span className="w-2 h-2 bg-red-500 rounded-full mr-1.5"></span>
+        OFFLINE
+      </span>
+    );
+  };
+
   return (
     <>
       <header className="bg-white dark:bg-gray-800 shadow-md sticky top-0 z-50 transition-colors">
@@ -39,19 +64,7 @@ export function Header() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">TrakCare Offline</h1>
-              <span className={isOnline ? 'badge-online' : 'badge-offline'}>
-                {isOnline ? (
-                  <>
-                    <span className="w-2 h-2 bg-green-500 rounded-full mr-1.5"></span>
-                    ONLINE
-                  </>
-                ) : (
-                  <>
-                    <span className="w-2 h-2 bg-red-500 rounded-full mr-1.5"></span>
-                    OFFLINE
-                  </>
-                )}
-              </span>
+              {connectionBadge()}
             </div>
 
             {storedUser && (

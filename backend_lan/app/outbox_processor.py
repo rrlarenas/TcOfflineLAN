@@ -114,8 +114,24 @@ class OutboxProcessor:
             logger.info(f"Complete JSON Payload:\n{json.dumps(payload, indent=2, ensure_ascii=False)}")
             logger.info("=" * 50)
 
-            async with httpx.AsyncClient(timeout=30.0) as client:
-                response = await client.post(api_url, json=payload, auth=auth)
+            return await self._post_hl7(api_url, payload, auth)
+
+        except httpx.TimeoutException:
+            return False, "TIMEOUT", "Request timeout"
+        except httpx.ConnectError:
+            return False, "CONNECT_ERROR", "Connection refused"
+        except Exception as e:
+            return False, "ERROR", f"Unexpected error: {str(e)}"
+
+    async def _post_hl7(self, api_url: str, payload: dict, auth: tuple) -> tuple[bool, str, Optional[dict]]:
+        """Execute the HTTP POST, retrying with verify=False on SSL errors."""
+        for verify in (True, False):
+            try:
+                async with httpx.AsyncClient(timeout=30.0, verify=verify) as client:
+                    response = await client.post(api_url, json=payload, auth=auth)
+
+                if not verify:
+                    logger.warning(f"HL7 POST succeeded with SSL verification disabled (self-signed certificate)")
 
                 logger.info(f"Response status: {response.status_code}")
                 logger.info(f"Response body: {response.text[:500]}")
@@ -141,12 +157,14 @@ class OutboxProcessor:
                     logger.error(f"Failed to send HL7: {error_msg}")
                     return False, "HTTP_ERROR", error_msg
 
-        except httpx.TimeoutException:
-            return False, "TIMEOUT", "Request timeout"
-        except httpx.ConnectError:
-            return False, "CONNECT_ERROR", "Connection refused"
-        except Exception as e:
-            return False, "ERROR", f"Unexpected error: {str(e)}"
+            except Exception as e:
+                error_str = str(e).lower()
+                if verify and ("ssl" in error_str or "certificate" in error_str):
+                    logger.warning(f"SSL error on HL7 POST, retrying with verify=False: {e}")
+                    continue
+                raise
+
+        return False, "SSL_ERROR", "SSL certificate verification failed"
 
     def generate_hl7_from_event(self, event: models.OutboxEvent, db: Session) -> Optional[str]:
         """

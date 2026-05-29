@@ -26,11 +26,17 @@ def check_central_health(
     check_url = f"{central_url}{api_endpoint}"
     try:
         with httpx.Client(timeout=5.0) as client:
-            response = client.head(check_url)
-            if response.status_code < 400:
+            try:
+                response = client.head(check_url)
+            except Exception:
+                response = client.get(check_url)
+            if response.status_code < 500:
                 return {"status": "online", "central_url": central_url}
             return {"status": "offline", "central_url": central_url}
-    except Exception:
+    except Exception as e:
+        error_str = str(e).lower()
+        if "ssl" in error_str or "certificate" in error_str:
+            return {"status": "warning", "reason": "ssl_error", "central_url": central_url}
         return {"status": "offline", "central_url": central_url}
 
 

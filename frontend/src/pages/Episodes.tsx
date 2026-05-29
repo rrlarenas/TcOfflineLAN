@@ -24,7 +24,16 @@ export function Episodes() {
   const [episodes, setEpisodes] = useState<Episode[]>([]);
   const [availableTabs, setAvailableTabs] = useState<Array<{ id: EpisodeType; label: string }>>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [syncStats, setSyncStats] = useState<SyncStats | null>(null);
+  const [syncStats, setSyncStats] = useState<SyncStats>({
+    pending_events: 0,
+    failed_events: 0,
+    total_episodes: 0,
+    synced_episodes: 0,
+    local_only_episodes: 0,
+    last_downstream_sync: null,
+    last_upstream_sync: null,
+    connection: { is_online: false, status: 'offline', last_check: null },
+  });
   const [enableNewEpisodeButton, setEnableNewEpisodeButton] = useState(false);
 
   const loadAllEpisodes = async () => {
@@ -102,6 +111,10 @@ export function Episodes() {
         }
       } catch (error) {
         console.error('Error loading sync stats:', error);
+        setSyncStats(prev => ({
+          ...prev,
+          connection: { is_online: false, status: 'offline' as const, last_check: null },
+        }));
       }
     };
 
@@ -175,13 +188,26 @@ export function Episodes() {
               </div>
             </div>
           )}
-          {syncStats && (
-            <div className="mt-4 space-y-2">
+          <div className="mt-4 space-y-2">
               <div className="flex items-center gap-6 text-sm bg-gray-100 dark:bg-gray-900 px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-800">
                 <div className="flex items-center gap-2">
-                  <div className={`w-2.5 h-2.5 rounded-full ${syncStats.connection.is_online ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                  <span className="font-medium text-gray-900 dark:text-gray-100">
-                    {syncStats.connection.is_online ? t.episodes.connected : t.episodes.disconnected}
+                  <div className={`w-2.5 h-2.5 rounded-full ${
+                    syncStats.connection.status === 'online'
+                      ? 'bg-green-500'
+                      : syncStats.connection.status === 'warning'
+                        ? 'bg-yellow-500'
+                        : 'bg-red-500'
+                  }`}></div>
+                  <span className={`font-medium ${
+                    syncStats.connection.status === 'warning'
+                      ? 'text-yellow-700 dark:text-yellow-400'
+                      : 'text-gray-900 dark:text-gray-100'
+                  }`}>
+                    {syncStats.connection.status === 'online'
+                      ? t.episodes.connected
+                      : syncStats.connection.status === 'warning'
+                        ? t.episodes.sslWarning
+                        : t.episodes.disconnected}
                   </span>
                 </div>
                 <div className="text-gray-900 dark:text-gray-100">
@@ -197,7 +223,6 @@ export function Episodes() {
                 )}
               </div>
             </div>
-          )}
         </div>
 
         {availableTabs.length > 0 && (

@@ -167,6 +167,7 @@ export interface SyncStats {
   last_upstream_sync: string | null;
   connection: {
     is_online: boolean;
+    status: 'online' | 'warning' | 'offline';
     last_check: string | null;
   };
 }

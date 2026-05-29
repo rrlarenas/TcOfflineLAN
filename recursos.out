@@ -1,0 +1,229 @@
+=====================================
+   RECURSOS DEL SERVIDOR LINUX
+=====================================
+
+===== HOST =====
+ventas02.hsml.vtas.cl.intersystems.com
+
+===== FECHA =====
+Fri May 29 09:59:03 -04 2026
+
+===== UPTIME / LOAD =====
+ 09:59:03 up 25 days, 11 min,  1 user,  load average: 0.83, 0.51, 0.39
+
+===== CPU =====
+CPU(s):              8
+On-line CPU(s) list: 0-7
+Thread(s) per core:  1
+Core(s) per socket:  1
+Socket(s):           8
+Model name:          Intel(R) Xeon(R) Gold 6330 CPU @ 2.00GHz
+BIOS Model name:     Intel(R) Xeon(R) Gold 6330 CPU @ 2.00GHz
+CPU MHz:             1995.312
+NUMA node0 CPU(s):   0-7
+
+===== USO CPU (%) =====
+%Cpu(s):  8.4 us,  3.2 sy,  0.0 ni, 88.3 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st
+
+===== MEMORIA =====
+              total        used        free      shared  buff/cache   available
+Mem:           31Gi        26Gi       685Mi       886Mi       4.1Gi       3.5Gi
+Swap:         7.9Gi       960Mi       7.0Gi
+
+===== DISCO =====
+Filesystem                      Size  Used Avail Use% Mounted on
+devtmpfs                         16G     0   16G   0% /dev
+tmpfs                            16G  6.0M   16G   1% /dev/shm
+tmpfs                            16G  914M   15G   6% /run
+tmpfs                            16G     0   16G   0% /sys/fs/cgroup
+/dev/mapper/rhel-root            40G   29G   12G  73% /
+/dev/mapper/hsjrnvg-hsjrnseclv   30G  247M   30G   1% /hs/ventas/jrnsec
+/dev/mapper/trakvg-traklv        70G  532M   70G   1% /trak
+/dev/mapper/hsjrnvg-hsjrnprilv   50G  858M   50G   2% /hs/ventas/jrnpri
+/dev/mapper/hsdbvg-hsdblv       400G  278G  123G  70% /hs/ventas/db
+/dev/mapper/hsirisvg-hsirislv    80G   50G   31G  63% /hs/ventas/iris
+/dev/mapper/rhel-home            40G   30G   11G  73% /home
+/dev/mapper/rhel-var            6.0G  2.6G  3.5G  43% /var
+/dev/sda2                      1014M  348M  667M  35% /boot
+/dev/mapper/rhel-tmp             20G  177M   20G   1% /tmp
+/dev/sda1                       599M  5.8M  594M   1% /boot/efi
+overlay                         400G  278G  123G  70% /hs/ventas/db/docker/rootfs/overlayfs/8fdac6b73ed367db3fd3de8d46f353dd99e553ba55f51c53754b40b6b5ba4618
+overlay                         400G  278G  123G  70% /hs/ventas/db/docker/rootfs/overlayfs/412759dc37171872d5ae44aca732921ebac058ef1a11ffb799a5200f4a088612
+overlay                         400G  278G  123G  70% /hs/ventas/db/docker/rootfs/overlayfs/fc5897dc08364c21a5ef2341fe8ecd0cd26c1558f3d79efa9fbc46b0a27965c1
+overlay                         400G  278G  123G  70% /hs/ventas/db/docker/rootfs/overlayfs/18ef0a62277d7ac842b2a31f5a9a9a83311ec0f3ceb50cc7d22c7a86a417db48
+tmpfs                           3.2G     0  3.2G   0% /run/user/1014
+
+===== PARTICIONES =====
+NAME                 MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+sda                    8:0    0  128G  0 disk 
+├─sda1                 8:1    0  600M  0 part /boot/efi
+├─sda2                 8:2    0    1G  0 part /boot
+├─sda3                 8:3    0 54.9G  0 part 
+│ ├─rhel-root        253:0    0   40G  0 lvm  /
+│ ├─rhel-swap        253:1    0  7.9G  0 lvm  [SWAP]
+│ ├─rhel-tmp         253:7    0   20G  0 lvm  /tmp
+│ ├─rhel-home        253:8    0   40G  0 lvm  /home
+│ └─rhel-var         253:9    0    6G  0 lvm  /var
+├─sda4                 8:4    0   20G  0 part 
+│ ├─rhel-root        253:0    0   40G  0 lvm  /
+│ ├─rhel-tmp         253:7    0   20G  0 lvm  /tmp
+│ ├─rhel-home        253:8    0   40G  0 lvm  /home
+│ └─rhel-var         253:9    0    6G  0 lvm  /var
+├─sda5                 8:5    0   20G  0 part 
+│ └─rhel-root        253:0    0   40G  0 lvm  /
+└─sda6                 8:6    0   20G  0 part 
+  ├─rhel-tmp         253:7    0   20G  0 lvm  /tmp
+  └─rhel-home        253:8    0   40G  0 lvm  /home
+sdb                    8:16   0   90G  0 disk 
+└─hsirisvg-hsirislv  253:5    0   80G  0 lvm  /hs/ventas/iris
+sdc                    8:32   0  100G  0 disk 
+├─hsjrnvg-hsjrnprilv 253:2    0   50G  0 lvm  /hs/ventas/jrnpri
+└─hsjrnvg-hsjrnseclv 253:3    0   30G  0 lvm  /hs/ventas/jrnsec
+sdd                    8:48   0  500G  0 disk 
+└─hsdbvg-hsdblv      253:4    0  400G  0 lvm  /hs/ventas/db
+sde                    8:64   0   80G  0 disk 
+└─trakvg-traklv      253:6    0   70G  0 lvm  /trak
+sr0                   11:0    1 1024M  0 rom  
+
+===== TOP 10 PROCESOS CPU =====
+    PID    PPID CMD                         %MEM %CPU
+   1457       1 /opt/traps/bin/pmd           1.2  7.3
+      1       0 /usr/lib/systemd/systemd --  0.0  2.4
+2781979 2780650 sudo ./recursos.sh           0.0  2.0
+   1957       1 /usr/bin/dockerd -H fd:// -  0.2  1.5
+   1479       1 /usr/bin/containerd          0.1  1.4
+   1456       1 /usr/libexec/platform-pytho  0.1  1.0
+1608597    1457 /opt/traps/python/payload/p  0.1  0.8
+2009316 2009296 /usr/local/bin/python3.11 /  0.3  0.8
+   8253    8159 /usr/share/elasticsearch/jd 12.2  0.4
+   8507    8483 java -Xms4g -Xmx8g --add-op  7.2  0.3
+
+===== TOP 10 PROCESOS MEMORIA =====
+    PID    PPID CMD                         %MEM %CPU
+   8253    8159 /usr/share/elasticsearch/jd 12.2  0.4
+   8507    8483 java -Xms4g -Xmx8g --add-op  7.2  0.3
+   1457       1 /opt/traps/bin/pmd           1.2  7.3
+    950       1 /usr/lib/systemd/systemd-jo  0.8  0.0
+   1373    1323 /usr/libexec/sssd/sssd_be -  0.5  0.1
+ 103604    1457 /opt/traps/analyzerd/sandbo  0.4  0.0
+2009316 2009296 /usr/local/bin/python3.11 /  0.3  0.8
+   1957       1 /usr/bin/dockerd -H fd:// -  0.2  1.5
+   1950       1 /usr/sbin/rsyslogd -n        0.1  0.0
+1608597    1457 /opt/traps/python/payload/p  0.1  0.8
+
+===== RED =====
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+ens192           UP             100.66.11.101/24 
+br-5ad2371fad52  UP             172.18.0.1/16 fe80::60:acff:fe77:f49b/64 
+br-a80f56922673  DOWN           172.19.0.1/16 
+docker0          DOWN           172.17.0.1/16 fe80::54b4:7ff:fe63:b575/64 
+br-3cb3d67fa44c  DOWN           172.20.0.1/16 
+vethaf7c83e@if2  UP             fe80::d4c4:2fff:fecb:9715/64 
+veth986e7a3@if2  UP             fe80::7073:b3ff:fecd:9c0b/64 
+br-6364f5ade46b  UP             172.21.0.1/16 fe80::e007:87ff:fe56:be54/64 
+veth6b1c1a3@if2  UP             fe80::18b3:afff:fee9:d905/64 
+br-ffb76dd1af7d  UP             172.22.0.1/16 fe80::d075:19ff:fe63:c93b/64 
+vethe0e08ef@if2  UP             fe80::8049:29ff:feef:c45/64 
+
+===== CONEXIONES ACTIVAS =====
+Netid State      Recv-Q Send-Q          Local Address:Port          Peer Address:Port Process                                                     
+udp   UNCONN     0      0                     0.0.0.0:111                0.0.0.0:*     users:(("rpcbind",pid=1284,fd=5),("systemd",pid=1,fd=41))  
+udp   UNCONN     0      0                   127.0.0.1:323                0.0.0.0:*     users:(("chronyd",pid=1345,fd=5))                          
+udp   UNCONN     0      0                     0.0.0.0:33221              0.0.0.0:*     users:(("pmd",pid=1457,fd=209))                            
+udp   UNCONN     0      0                     0.0.0.0:5353               0.0.0.0:*     users:(("avahi-daemon",pid=1316,fd=13))                    
+udp   UNCONN     0      0                     0.0.0.0:42037              0.0.0.0:*     users:(("avahi-daemon",pid=1316,fd=15))                    
+udp   UNCONN     0      0                        [::]:111                   [::]:*     users:(("rpcbind",pid=1284,fd=7),("systemd",pid=1,fd=43))  
+udp   UNCONN     0      0                       [::1]:323                   [::]:*     users:(("chronyd",pid=1345,fd=6))                          
+udp   UNCONN     0      0                        [::]:33288                 [::]:*     users:(("avahi-daemon",pid=1316,fd=16))                    
+udp   UNCONN     0      0                        [::]:5353                  [::]:*     users:(("avahi-daemon",pid=1316,fd=14))                    
+tcp   LISTEN     0      5                   127.0.0.1:631                0.0.0.0:*     users:(("cupsd",pid=1464,fd=7))                            
+tcp   LISTEN     0      2048                  0.0.0.0:5432               0.0.0.0:*     users:(("docker-proxy",pid=165002,fd=7))                   
+tcp   LISTEN     0      511                   0.0.0.0:443                0.0.0.0:*     users:(("httpd",pid=2247304,fd=4),("httpd",pid=1939,fd=4)) 
+tcp   LISTEN     0      100                   0.0.0.0:1883               0.0.0.0:*     users:(("mosquitto",pid=1488,fd=4))                        
+tcp   LISTEN     0      2048                  0.0.0.0:8000               0.0.0.0:*     users:(("docker-proxy",pid=2009386,fd=7))                  
+tcp   LISTEN     0      5                   127.0.0.1:44321              0.0.0.0:*     users:(("pmcd",pid=3884,fd=0))                             
+tcp   LISTEN     0      2                     0.0.0.0:33221              0.0.0.0:*     users:(("pmd",pid=1457,fd=322))                            
+tcp   LISTEN     0      5                   127.0.0.1:4330               0.0.0.0:*     users:(("pmlogger",pid=6416,fd=8))                         
+tcp   LISTEN     0      128                   0.0.0.0:2188               0.0.0.0:*     users:(("ISCAgent",pid=2114,fd=7))                         
+tcp   LISTEN     0      128                   0.0.0.0:111                0.0.0.0:*     users:(("rpcbind",pid=1284,fd=4),("systemd",pid=1,fd=40))  
+tcp   LISTEN     0      2048                127.0.0.1:8080               0.0.0.0:*     users:(("docker-proxy",pid=8561,fd=7))                     
+tcp   LISTEN     0      2048                127.0.0.1:9200               0.0.0.0:*     users:(("docker-proxy",pid=8145,fd=7))                     
+tcp   LISTEN     0      511                   0.0.0.0:80                 0.0.0.0:*     users:(("httpd",pid=2247304,fd=3),("httpd",pid=1939,fd=3)) 
+tcp   LISTEN     0      128                   0.0.0.0:22                 0.0.0.0:*     users:(("sshd",pid=1460,fd=3))                             
+tcp   CLOSE-WAIT 1      0               100.66.11.101:443           100.67.10.30:57834 users:(("httpd",pid=2247304,fd=22))                        
+tcp   CLOSE-WAIT 1      0                   127.0.0.1:35484            127.0.0.1:8080  users:(("httpd",pid=2247304,fd=25))                        
+tcp   CLOSE-WAIT 1      0               100.66.11.101:443           100.67.10.30:58970 users:(("httpd",pid=2247304,fd=29))                        
+tcp   TIME-WAIT  0      0               100.66.11.101:80            100.67.10.31:20842                                                            
+tcp   TIME-WAIT  0      0               100.66.11.101:80            100.66.10.31:23616                                                            
+tcp   TIME-WAIT  0      0               100.66.11.101:80            100.67.10.31:20938                                                            
+
+===== ESPACIO INODOS =====
+Filesystem                        Inodes  IUsed     IFree IUse% Mounted on
+devtmpfs                         4072844    485   4072359    1% /dev
+tmpfs                            4077818      6   4077812    1% /dev/shm
+tmpfs                            4077818   1099   4076719    1% /run
+tmpfs                            4077818     17   4077801    1% /sys/fs/cgroup
+/dev/mapper/rhel-root           20971520 242324  20729196    2% /
+/dev/mapper/hsjrnvg-hsjrnseclv  15728640     11  15728629    1% /hs/ventas/jrnsec
+/dev/mapper/trakvg-traklv       36700160      3  36700157    1% /trak
+/dev/mapper/hsjrnvg-hsjrnprilv  26214400     41  26214359    1% /hs/ventas/jrnpri
+/dev/mapper/hsdbvg-hsdblv      209715200 378067 209337133    1% /hs/ventas/db
+/dev/mapper/hsirisvg-hsirislv   41943040 368362  41574678    1% /hs/ventas/iris
+/dev/mapper/rhel-home           20971520 289601  20681919    2% /home
+/dev/mapper/rhel-var             3145728  40065   3105663    2% /var
+/dev/sda2                         524288     36    524252    1% /boot
+/dev/mapper/rhel-tmp            10485760      8  10485752    1% /tmp
+/dev/sda1                              0      0         0     - /boot/efi
+overlay                        209715200 378067 209337133    1% /hs/ventas/db/docker/rootfs/overlayfs/8fdac6b73ed367db3fd3de8d46f353dd99e553ba55f51c53754b40b6b5ba4618
+overlay                        209715200 378067 209337133    1% /hs/ventas/db/docker/rootfs/overlayfs/412759dc37171872d5ae44aca732921ebac058ef1a11ffb799a5200f4a088612
+overlay                        209715200 378067 209337133    1% /hs/ventas/db/docker/rootfs/overlayfs/fc5897dc08364c21a5ef2341fe8ecd0cd26c1558f3d79efa9fbc46b0a27965c1
+overlay                        209715200 378067 209337133    1% /hs/ventas/db/docker/rootfs/overlayfs/18ef0a62277d7ac842b2a31f5a9a9a83311ec0f3ceb50cc7d22c7a86a417db48
+tmpfs                            4077818      5   4077813    1% /run/user/1014
+
+===== MONTAJES =====
+sysfs                           on  /sys                                                                                                    type  sysfs        (rw,nosuid,nodev,noexec,relatime,seclabel)
+proc                            on  /proc                                                                                                   type  proc         (rw,nosuid,nodev,noexec,relatime)
+devtmpfs                        on  /dev                                                                                                    type  devtmpfs     (rw,nosuid,seclabel,size=16291376k,nr_inodes=4072844,mode=755)
+securityfs                      on  /sys/kernel/security                                                                                    type  securityfs   (rw,nosuid,nodev,noexec,relatime)
+tmpfs                           on  /dev/shm                                                                                                type  tmpfs        (rw,nosuid,nodev,seclabel)
+devpts                          on  /dev/pts                                                                                                type  devpts       (rw,nosuid,noexec,relatime,seclabel,gid=5,mode=620,ptmxmode=000)
+tmpfs                           on  /run                                                                                                    type  tmpfs        (rw,nosuid,nodev,seclabel,mode=755)
+tmpfs                           on  /sys/fs/cgroup                                                                                          type  tmpfs        (ro,nosuid,nodev,noexec,seclabel,mode=755)
+cgroup                          on  /sys/fs/cgroup/systemd                                                                                  type  cgroup       (rw,nosuid,nodev,noexec,relatime,seclabel,xattr,release_agent=/usr/lib/systemd/systemd-cgroups-agent,name=systemd)
+pstore                          on  /sys/fs/pstore                                                                                          type  pstore       (rw,nosuid,nodev,noexec,relatime,seclabel)
+efivarfs                        on  /sys/firmware/efi/efivars                                                                               type  efivarfs     (rw,nosuid,nodev,noexec,relatime)
+bpf                             on  /sys/fs/bpf                                                                                             type  bpf          (rw,nosuid,nodev,noexec,relatime,mode=700)
+cgroup                          on  /sys/fs/cgroup/net_cls,net_prio                                                                         type  cgroup       (rw,nosuid,nodev,noexec,relatime,seclabel,net_cls,net_prio)
+cgroup                          on  /sys/fs/cgroup/blkio                                                                                    type  cgroup       (rw,nosuid,nodev,noexec,relatime,seclabel,blkio)
+cgroup                          on  /sys/fs/cgroup/perf_event                                                                               type  cgroup       (rw,nosuid,nodev,noexec,relatime,seclabel,perf_event)
+cgroup                          on  /sys/fs/cgroup/freezer                                                                                  type  cgroup       (rw,nosuid,nodev,noexec,relatime,seclabel,freezer)
+cgroup                          on  /sys/fs/cgroup/devices                                                                                  type  cgroup       (rw,nosuid,nodev,noexec,relatime,seclabel,devices)
+cgroup                          on  /sys/fs/cgroup/pids                                                                                     type  cgroup       (rw,nosuid,nodev,noexec,relatime,seclabel,pids)
+cgroup                          on  /sys/fs/cgroup/cpuset                                                                                   type  cgroup       (rw,nosuid,nodev,noexec,relatime,seclabel,cpuset)
+cgroup                          on  /sys/fs/cgroup/cpu,cpuacct                                                                              type  cgroup       (rw,nosuid,nodev,noexec,relatime,seclabel,cpu,cpuacct)
+cgroup                          on  /sys/fs/cgroup/rdma                                                                                     type  cgroup       (rw,nosuid,nodev,noexec,relatime,seclabel,rdma)
+cgroup                          on  /sys/fs/cgroup/hugetlb                                                                                  type  cgroup       (rw,nosuid,nodev,noexec,relatime,seclabel,hugetlb)
+cgroup                          on  /sys/fs/cgroup/memory                                                                                   type  cgroup       (rw,nosuid,nodev,noexec,relatime,seclabel,memory)
+none                            on  /sys/kernel/tracing                                                                                     type  tracefs      (rw,relatime,seclabel)
+configfs                        on  /sys/kernel/config                                                                                      type  configfs     (rw,relatime)
+/dev/mapper/rhel-root           on  /                                                                                                       type  xfs          (rw,relatime,seclabel,attr2,inode64,logbufs=8,logbsize=32k,noquota)
+selinuxfs                       on  /sys/fs/selinux                                                                                         type  selinuxfs    (rw,relatime)
+systemd-1                       on  /proc/sys/fs/binfmt_misc                                                                                type  autofs       (rw,relatime,fd=36,pgrp=1,timeout=0,minproto=5,maxproto=5,direct,pipe_ino=18983)
+hugetlbfs                       on  /dev/hugepages                                                                                          type  hugetlbfs    (rw,relatime,seclabel,pagesize=2M)
+mqueue                          on  /dev/mqueue                                                                                             type  mqueue       (rw,relatime,seclabel)
+
+===== TEMPERATURA (si existe) =====
+lm_sensors no instalado
+
+===== DOCKER (si existe) =====
+NAMES                    STATUS                  PORTS
+trakcare-backend-lan     Up 14 hours (healthy)   0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp
+tcoffline-backend-db-1   Up 8 days (healthy)     0.0.0.0:5432->5432/tcp, [::]:5432->5432/tcp
+snowstorm                Up 3 weeks              127.0.0.1:8080->8080/tcp
+elasticsearch            Up 3 weeks (healthy)    127.0.0.1:9200->9200/tcp, 9300/tcp
+
+===== MEMORIA SWAP =====
+NAME      TYPE      SIZE   USED PRIO
+/dev/dm-1 partition 7.9G 960.9M   -2
+
+===== FIN =====

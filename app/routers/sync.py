@@ -18,7 +18,8 @@ def _get_processor() -> OutboxProcessor:
     return OutboxProcessor(central_url)
 
 
-def _check_central_online(db: Session) -> bool:
+def _check_central_online(db: Session) -> str:
+    """Returns 'online', 'warning' (SSL error), or 'offline'."""
     from app.routers.admin import get_runtime_config
     cfg = get_runtime_config(db)
     central_url = cfg.central_url if cfg else settings.CENTRAL_URL
@@ -26,10 +27,16 @@ def _check_central_online(db: Session) -> bool:
     check_url = f"{central_url}{api_endpoint}"
     try:
         with httpx.Client(timeout=5.0) as client:
-            response = client.head(check_url)
-            return response.status_code < 400
-    except Exception:
-        return False
+            try:
+                response = client.head(check_url)
+            except Exception:
+                response = client.get(check_url)
+            return "online" if response.status_code < 500 else "offline"
+    except Exception as e:
+        error_str = str(e).lower()
+        if "ssl" in error_str or "certificate" in error_str:
+            return "warning"
+        return "offline"
 
 
 @router.post("/trigger")
@@ -84,8 +91,8 @@ def get_connection_status(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_active_user),
 ):
-    is_online = _check_central_online(db)
-    return {"is_online": is_online, "last_check": None}
+    status = _check_central_online(db)
+    return {"is_online": status == "online", "status": status, "last_check": None}
 
 
 @router.get("/stats")
@@ -94,12 +101,13 @@ def get_sync_stats(
     current_user: models.User = Depends(get_current_active_user)
 ):
     stats = SyncStateManager.get_sync_stats(db)
-    is_online = _check_central_online(db)
+    status = _check_central_online(db)
 
     return {
         **stats,
         "connection": {
-            "is_online": is_online,
+            "is_online": status == "online",
+            "status": status,
             "last_check": None
         }
     }

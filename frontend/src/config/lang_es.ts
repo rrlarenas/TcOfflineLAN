@@ -36,6 +36,7 @@ export const lang_es = {
     darkMode: 'Modo oscuro',
     lightMode: 'Modo claro',
     language: 'Idioma',
+    sslWarning: 'Error de certificado SSL en el servidor central',
   },
 
   login: {
@@ -67,6 +68,7 @@ export const lang_es = {
     loadingEpisodes: 'Cargando episodios...',
     connected: 'Conectado',
     disconnected: 'Sin conexión',
+    sslWarning: 'Advertencia SSL',
     dataReception: 'Recepción datos (GET)',
     hl7Send: 'Envío HL7 (POST)',
     never: 'Nunca',

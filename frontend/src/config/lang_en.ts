@@ -39,6 +39,7 @@ export const lang_en: TranslationKeys = {
     darkMode: 'Dark mode',
     lightMode: 'Light mode',
     language: 'Language',
+    sslWarning: 'SSL certificate error on central server',
   },
 
   login: {
@@ -70,6 +71,7 @@ export const lang_en: TranslationKeys = {
     loadingEpisodes: 'Loading episodes...',
     connected: 'Connected',
     disconnected: 'Disconnected',
+    sslWarning: 'SSL Warning',
     dataReception: 'Data reception (GET)',
     hl7Send: 'HL7 send (POST)',
     never: 'Never',
