@@ -8,7 +8,7 @@ rem  Uso:
 rem    docker-build-deploy.bat                              Solo build local
 rem    docker-build-deploy.bat --deploy usuario@host        Build + transferir + levantar
 rem    docker-build-deploy.bat --deploy usuario@host --port 2222
-rem    docker-build-deploy.bat --tag 1.9.2-rc08 --deploy usuario@host
+rem    docker-build-deploy.bat --tag 2.5.0-rc10-stable --deploy usuario@host
 rem =============================================================================
 
 set IMAGE_NAME=trakcare-backend-lan

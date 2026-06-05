@@ -43,9 +43,9 @@ export function Header() {
     }
     if (status === 'warning') {
       return (
-        <span className="badge-warning" title={t.header.sslWarning}>
+        <span className="badge-warning" title={t.header.sslWarningTooltip}>
           <span className="w-2 h-2 bg-yellow-500 rounded-full mr-1.5"></span>
-          WARNING
+          {t.header.sslWarningShort}
         </span>
       );
     }
@@ -60,7 +60,7 @@ export function Header() {
   return (
     <>
       <header className="bg-white dark:bg-gray-800 shadow-md sticky top-0 z-50 transition-colors">
-        <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
+        <div className="w-full px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">TrakCare Offline</h1>

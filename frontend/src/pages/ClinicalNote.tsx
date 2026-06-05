@@ -265,41 +265,6 @@ export function ClinicalNote() {
           </div>
         </div>
 
-        {notes.length > 0 && (
-          <div className="card mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-50 mb-4">{t.clinicalNote.previousNotes}</h3>
-            <div className="space-y-4">
-              {notes.map((note) => (
-                <div key={note.id} className="border-l-4 border-blue-500 bg-gray-50 dark:bg-gray-900 p-4 rounded-r-lg">
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-1">
-                        <span className="font-medium">{note.author_username}</span>
-                        <span>•</span>
-                        <span>{formatDateTime(note.created_at)}</span>
-                        <span>•</span>
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                          note.synced_flag
-                            ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
-                            : 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200'
-                        }`}>
-                          {note.synced_flag ? t.clinicalNote.sent : t.clinicalNote.pending}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap font-mono">
-                    {note.note_text}
-                    {note.author_nombre && (
-                      <span className="text-gray-600 dark:text-gray-400">{'\n\n'}{note.author_nombre}</span>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
         {isReadOnlyMode && (
           <div className="mb-6 bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-900 text-amber-800 dark:text-amber-200 rounded-lg p-4">
             <div className="flex items-start gap-3">
@@ -314,7 +279,7 @@ export function ClinicalNote() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="card">
+        <form onSubmit={handleSubmit} className="card mb-6">
           <div className="mb-4">
             <label className="label text-base">
               {t.clinicalNote.newNote}
@@ -362,6 +327,41 @@ export function ClinicalNote() {
             </button>
           </div>
         </form>
+
+        {notes.length > 0 && (
+          <div className="card">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-50 mb-4">{t.clinicalNote.previousNotes}</h3>
+            <div className="space-y-4">
+              {notes.map((note) => (
+                <div key={note.id} className="border-l-4 border-blue-500 bg-gray-50 dark:bg-gray-900 p-4 rounded-r-lg">
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-1">
+                        <span className="font-medium">{note.author_username}</span>
+                        <span>•</span>
+                        <span>{formatDateTime(note.created_at)}</span>
+                        <span>•</span>
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                          note.synced_flag
+                            ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
+                            : 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200'
+                        }`}>
+                          {note.synced_flag ? t.clinicalNote.sent : t.clinicalNote.pending}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap font-mono">
+                    {note.note_text}
+                    {note.author_nombre && (
+                      <span className="text-gray-600 dark:text-gray-400">{'\n\n'}{note.author_nombre}</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

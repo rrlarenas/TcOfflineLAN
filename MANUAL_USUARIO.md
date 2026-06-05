@@ -1,4 +1,4 @@
-# Manual de Usuario — TrakCare Offline v2.1.0-rc3
+# Manual de Usuario — TrakCare Offline v2.5.0-rc10-stable
 
 Sistema de contingencia clínica para gestión offline de episodios y notas clínicas con sincronización automática al servidor central TrakCare.
 

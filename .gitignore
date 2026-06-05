@@ -1,6 +1,2 @@
 node_modules
 .env
-*.tar
-backend_lan/*.tar
-*.zip
-dist

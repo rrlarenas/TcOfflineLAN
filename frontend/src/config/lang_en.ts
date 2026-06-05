@@ -40,6 +40,8 @@ export const lang_en: TranslationKeys = {
     lightMode: 'Light mode',
     language: 'Language',
     sslWarning: 'SSL certificate error on central server',
+    sslWarningShort: 'SSL Cert.',
+    sslWarningTooltip: 'Connected to the central server, but the SSL certificate is not trusted. Data is syncing, though the connection is not properly encrypted.',
   },
 
   login: {
@@ -71,9 +73,9 @@ export const lang_en: TranslationKeys = {
     loadingEpisodes: 'Loading episodes...',
     connected: 'Connected',
     disconnected: 'Disconnected',
-    sslWarning: 'SSL Warning',
-    dataReception: 'Data reception (GET)',
-    hl7Send: 'HL7 send (POST)',
+    sslWarning: 'Untrusted SSL cert.',
+    dataReception: 'Data reception',
+    hl7Send: 'Data transmission',
     never: 'Never',
     pendingEvents: 'event',
     pendingEventsPlural: 'events',

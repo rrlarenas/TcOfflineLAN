@@ -1,4 +1,4 @@
-# Plan de Pruebas — TrakCare Offline v2.1.0-rc3
+# Plan de Pruebas — TrakCare Offline v2.5.0-rc10-stable
 
 Sistema de contingencia clínica con sincronización bidireccional al servidor central TrakCare.
 

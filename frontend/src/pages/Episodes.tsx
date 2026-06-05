@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { Tabs } from '../components/Tabs';
@@ -35,6 +35,20 @@ export function Episodes() {
     connection: { is_online: false, status: 'offline', last_check: null },
   });
   const [enableNewEpisodeButton, setEnableNewEpisodeButton] = useState(false);
+  const [refreshProgress, setRefreshProgress] = useState(100);
+  const progressRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const resetProgressBar = () => {
+    if (progressRef.current) clearInterval(progressRef.current);
+    setRefreshProgress(100);
+    const step = 100 / (EPISODES_REFRESH_INTERVAL / 100);
+    progressRef.current = setInterval(() => {
+      setRefreshProgress(prev => {
+        if (prev <= 0) return 0;
+        return prev - step;
+      });
+    }, 100);
+  };
 
   const loadAllEpisodes = async () => {
     setIsLoading(true);
@@ -78,10 +92,17 @@ export function Episodes() {
 
   useEffect(() => {
     loadAllEpisodes();
+    resetProgressBar();
 
-    const interval = setInterval(loadAllEpisodes, EPISODES_REFRESH_INTERVAL);
+    const interval = setInterval(() => {
+      loadAllEpisodes();
+      resetProgressBar();
+    }, EPISODES_REFRESH_INTERVAL);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      if (progressRef.current) clearInterval(progressRef.current);
+    };
   }, []);
 
   useEffect(() => {
@@ -157,6 +178,12 @@ export function Episodes() {
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950">
       <Header />
+      <div className="h-0.5 bg-gray-100 dark:bg-gray-800 w-full overflow-hidden" title="Actualización automática de datos">
+        <div
+          className="h-full bg-blue-400 dark:bg-blue-600 opacity-60 transition-none"
+          style={{ width: `${refreshProgress}%` }}
+        />
+      </div>
 
       <main className="w-full px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">

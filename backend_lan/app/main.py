@@ -20,7 +20,7 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI(
     title="TrakCare Offline LAN",
     description="Backend LAN para gestión de datos clínicos en red local. JWT Auth, PostgreSQL, session-safe.",
-    version="1.9.2-rc08"
+    version="2.5.0-rc10-stable"
 )
 
 app.add_middleware(

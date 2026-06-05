@@ -78,10 +78,7 @@ export function EpisodesTable({ episodes, onEpisodeClick }: EpisodesTableProps) 
               <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-[17%]">
                 {t.episodes.dateAttention}
               </th>
-              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-[10%]">
-                {t.episodes.status}
-              </th>
-              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-[12%]">
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-[14%]">
                 {t.episodes.sync}
               </th>
             </tr>
@@ -90,7 +87,6 @@ export function EpisodesTable({ episodes, onEpisodeClick }: EpisodesTableProps) 
             {episodes.map((episode) => {
               const episodeData = getEpisodeData(episode);
               const hasUnsynedNotes = episode.pending_notes_count > 0;
-              const displayStatus = hasUnsynedNotes ? t.episodes.syncStatus.pendingCount : (episode.estado || (language === 'es' ? 'Activo' : 'Active'));
 
               return (
               <tr
@@ -134,15 +130,6 @@ export function EpisodesTable({ episodes, onEpisodeClick }: EpisodesTableProps) 
                   <div className="text-sm text-gray-900 dark:text-gray-100 truncate">
                     {formatDateTime(episode.fecha_atencion)}
                   </div>
-                </td>
-                <td className="px-3 py-3 whitespace-nowrap">
-                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full truncate ${
-                    hasUnsynedNotes
-                      ? 'bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200'
-                      : 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
-                  }`}>
-                    {displayStatus}
-                  </span>
                 </td>
                 <td className="px-3 py-3 whitespace-nowrap">
                   {episode.synced_flag && !hasUnsynedNotes ? (

@@ -1,13 +1,13 @@
 #!/bin/bash
 # ============================================================================
-# TrakCare LAN Backend v1.9.2-rc08 - Setup Script (Linux/macOS)
+# TrakCare LAN Backend v2.5.0-rc10-stable - Setup Script (Linux/macOS)
 # ============================================================================
 
 set -e
 
 echo ""
 echo "============================================================================"
-echo "TrakCare LAN Backend v1.9.2-rc08 - Setup"
+echo "TrakCare LAN Backend v2.5.0-rc10-stable - Setup"
 echo "============================================================================"
 echo ""
 

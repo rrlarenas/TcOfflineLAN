@@ -1,4 +1,4 @@
-# TrakCare Offline Local v2.1.0-rc3
+# TrakCare Offline Local v2.5.0-rc10-stable
 
 Sistema offline para gestión de episodios clínicos con sincronización bidireccional con servidor central.
 

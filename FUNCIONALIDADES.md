@@ -1,6 +1,6 @@
 # DOCUMENTACIÓN COMPLETA DE FUNCIONALIDADES
 
-Sistema TrakCare Offline - Versión 2.1.0-rc3
+Sistema TrakCare Offline - Versión 2.5.0-rc10-stable
 
 ---
 

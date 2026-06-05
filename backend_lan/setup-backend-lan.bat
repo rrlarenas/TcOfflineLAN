@@ -1,11 +1,11 @@
 @echo off
 REM ============================================================================
-REM TrakCare LAN Backend v1.9.2-rc08 - Setup Script (Windows)
+REM TrakCare LAN Backend v2.5.0-rc10-stable - Setup Script (Windows)
 REM ============================================================================
 
 echo.
 echo ============================================================================
-echo TrakCare LAN Backend v1.9.2-rc08 - Setup
+echo TrakCare LAN Backend v2.5.0-rc10-stable - Setup
 echo ============================================================================
 echo.
 

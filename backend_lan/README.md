@@ -1,4 +1,4 @@
-# TrakCare Offline LAN - Backend v1.9.2-rc08
+# TrakCare Offline LAN - Backend v2.5.0-rc10-stable
 
 Backend LAN del sistema TrakCare Offline. Variante del backend local diseñada para despliegue en red de área local (LAN), con PostgreSQL compartido, autenticación JWT y soporte multi-usuario session-safe.
 

@@ -1,5 +1,32 @@
 # Changelog
 
+## [2.5.0-rc10-stable] - 2026-05-30
+
+### Corregido
+
+#### POST HL7 falla con Warning SSL (certificado autofirmado)
+
+- **Problema**: El POST a `/hl7inbound` y los GET de sincronización fallaban con error `SSL: CERTIFICATE_VERIFY_FAILED` cuando el servidor central usa un certificado autofirmado. El indicador de conexión mostraba "Advertencia SSL" pero los eventos quedaban en estado `pending`/`failed`.
+- **Solución**: En `outbox_processor.py` (ambos backends) se agregó el método `_post_hl7()` con lógica de reintento: primer intento con `verify=True`; si la excepción contiene "ssl" o "certificate", reintenta automáticamente con `verify=False`. El mismo patrón se aplicó a `fetch_patient_data()` y `fetch_users()` en `sync_service.py`. Se loguea un WARNING cuando se opera con verificación deshabilitada.
+
+#### Indicador de envío/recepción sin estado SSL Warning
+
+- **Problema**: El indicador de conexión en la pantalla de episodios solo mostraba verde (conectado) o rojo (sin conexión), sin diferenciar el estado de advertencia SSL.
+- **Solución**: El endpoint `/sync/stats` ahora incluye el campo `status: 'online' | 'warning' | 'offline'` además del booleano `is_online`. El indicador en el frontend muestra punto amarillo y texto "Advertencia SSL" cuando el servidor responde pero con certificado inválido.
+
+#### Archivos Modificados
+- `app/outbox_processor.py`: nuevo `_post_hl7()` con SSL retry
+- `backend_lan/app/outbox_processor.py`: mismo fix
+- `app/sync_service.py`: SSL retry en `fetch_patient_data()` y `fetch_users()`
+- `backend_lan/app/sync_service.py`: mismo fix
+- `app/routers/sync.py`: `_check_central_online()` retorna `str` con estado SSL
+- `backend_lan/app/routers/sync.py`: mismo fix
+- `frontend/src/types/index.ts`: campo `status` en `SyncStats.connection`
+- `frontend/src/pages/Episodes.tsx`: indicador visual con estado warning
+- `frontend/src/config/lang_es.ts` y `lang_en.ts`: clave `sslWarning`
+
+---
+
 ## [2.1.0-rc3] - 2026-05-27
 
 ### Corregido

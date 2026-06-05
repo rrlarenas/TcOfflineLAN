@@ -1,7 +1,7 @@
 {
   "name": "trakcare-offline-ui",
   "private": true,
-  "version": "2.1.0-rc3",
+  "version": "2.5.0-rc10-stable",
   "description": "TrakCare Offline - Sistema de gestión de episodios médicos offline",
   "author": "TrakCare Team",
   "type": "module",
@@ -31,7 +31,7 @@
     "autoprefixer": "^10.4.16",
     "concurrently": "^8.2.2",
     "cross-env": "^7.0.3",
-    "electron": "^42.3.0",
+    "electron": "^42.3.3",
     "electron-builder": "^26.8.1",
     "eslint": "^9.0.0",
     "eslint-plugin-react-hooks": "^4.6.0",

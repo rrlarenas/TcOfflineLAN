@@ -1,0 +1,922 @@
+[
+  {
+    "MRN": "MRN741852",
+    "NumEpisodio": "EP2026040100010001",
+    "RUN": "14.752.381-K",
+    "Paciente": "Roberto Andrés Vásquez Morales",
+    "Nombre": "Roberto Andrés Vásquez Morales",
+    "FechaNacimiento": "1968-03-14",
+    "Sexo": "M",
+    "Tipo": "Hospitalización",
+    "FechaAtencion": "2026-04-01 08:30:00",
+    "Hospital": "Hospital Central",
+    "Habitacion": "302",
+    "Cama": "B",
+    "Ubicacion": "302-B",
+    "Estado": "En atención",
+    "Profesional": "Dr. García López",
+    "MotivoConsulta": "Dolor torácico opresivo irradiado a brazo izquierdo",
+    "Antecedentes": {
+      "Alergias": [
+        {
+          "Alergia": "Penicilina",
+          "Tipo": "Medicamentosa",
+          "Severidad": "Severa",
+          "Fecha": "2015-06-10",
+          "Activa": true
+        },
+        {
+          "Alergia": "Contraste yodado",
+          "Tipo": "Medicamentosa",
+          "Severidad": "Moderada",
+          "Fecha": "2021-11-22",
+          "Activa": true
+        }
+      ],
+      "Encuentros": [
+        {
+          "FechaHora": "2026-04-01 08:30:00",
+          "Medico": "Dr. García López",
+          "Especialidad": "Cardiología",
+          "Tipo": "Urgencia",
+          "MotivoConsulta": "Dolor torácico opresivo irradiado a brazo izquierdo",
+          "Diagnosticos": [
+            { "Glosa": "Síndrome coronario agudo sin elevación del segmento ST (NSTEMI)" },
+            { "Glosa": "Hipertensión arterial esencial" }
+          ],
+          "Medicamentos": [
+            { "Glosa": "Aspirina 100mg cada 24 horas" },
+            { "Glosa": "Atorvastatina 80mg cada 24 horas" },
+            { "Glosa": "Metoprolol 50mg cada 12 horas" },
+            { "Glosa": "Enoxaparina 60mg subcutáneo cada 12 horas" }
+          ],
+          "Indicaciones": [
+            { "Glosa": "Reposo absoluto en cama" },
+            { "Glosa": "Monitorización electrocardiográfica continua" },
+            { "Glosa": "Dieta hiposódica e hipograsa" },
+            { "Glosa": "Oxigenoterapia 2 L/min por naricera si saturación < 94%" }
+          ]
+        },
+        {
+          "FechaHora": "2025-09-15 10:00:00",
+          "Medico": "Dra. Martínez Silva",
+          "Especialidad": "Medicina Interna",
+          "Tipo": "Control",
+          "MotivoConsulta": "Control de hipertensión arterial y dislipidemia",
+          "Diagnosticos": [
+            { "Glosa": "Hipertensión arterial esencial controlada" },
+            { "Glosa": "Dislipidemia mixta" }
+          ],
+          "Medicamentos": [
+            { "Glosa": "Losartán 100mg cada 24 horas" },
+            { "Glosa": "Atorvastatina 20mg cada 24 horas" },
+            { "Glosa": "Hidroclorotiazida 25mg cada 24 horas" }
+          ],
+          "Indicaciones": [
+            { "Glosa": "Control en 3 meses" },
+            { "Glosa": "Dieta hiposódica" },
+            { "Glosa": "Actividad física moderada 30 min/día" }
+          ]
+        },
+        {
+          "FechaHora": "2025-01-20 14:30:00",
+          "Medico": "Dr. Ramírez (Radiólogo)",
+          "Especialidad": "Imagenología",
+          "Tipo": "Estudio de imagen",
+          "MotivoConsulta": "Radiografía de tórax AP y lateral",
+          "Diagnosticos": [
+            { "Glosa": "Cardiomegalia leve grado I" }
+          ],
+          "Medicamentos": [],
+          "Indicaciones": [
+            { "Glosa": "Índice cardiotorácico 0.52. Aumento discreto de la silueta cardíaca. Sin derrame pleural. Campos pulmonares sin infiltrados." }
+          ]
+        },
+        {
+          "FechaHora": "2024-07-08 09:15:00",
+          "Medico": "Dra. Silva (Radiología)",
+          "Especialidad": "Imagenología",
+          "Tipo": "Estudio de imagen",
+          "MotivoConsulta": "Ecocardiografía transtorácica",
+          "Diagnosticos": [
+            { "Glosa": "Disfunción diastólica grado I" },
+            { "Glosa": "Hipertrofia ventricular izquierda leve" }
+          ],
+          "Medicamentos": [],
+          "Indicaciones": [
+            { "Glosa": "FEVI 58%. Ventrículo izquierdo con hipertrofia concéntrica leve. Válvulas morfológicamente normales. Función sistólica conservada." }
+          ]
+        }
+      ],
+      "Resultados": [
+        {
+          "Tipo": "Hemograma completo",
+          "Examen": "Leucocitos",
+          "Valor": "11.8",
+          "Unidad": "x10^3/uL",
+          "RangoReferencia": "4.0-11.0",
+          "FechaHora": "2026-04-01 09:15:00",
+          "AbnormalFlag": "Alto"
+        },
+        {
+          "Tipo": "Hemograma completo",
+          "Examen": "Hemoglobina",
+          "Valor": "13.1",
+          "Unidad": "g/dL",
+          "RangoReferencia": "13.5-17.5",
+          "FechaHora": "2026-04-01 09:15:00",
+          "AbnormalFlag": "Bajo"
+        },
+        {
+          "Tipo": "Hemograma completo",
+          "Examen": "Hematocrito",
+          "Valor": "39",
+          "Unidad": "%",
+          "RangoReferencia": "41-53",
+          "FechaHora": "2026-04-01 09:15:00",
+          "AbnormalFlag": "Bajo"
+        },
+        {
+          "Tipo": "Hemograma completo",
+          "Examen": "Plaquetas",
+          "Valor": "198",
+          "Unidad": "x10^3/uL",
+          "RangoReferencia": "150-400",
+          "FechaHora": "2026-04-01 09:15:00",
+          "AbnormalFlag": "Normal"
+        },
+        {
+          "Tipo": "Marcadores cardíacos",
+          "Examen": "Troponina I",
+          "Valor": "2.84",
+          "Unidad": "ng/mL",
+          "RangoReferencia": "0.00-0.04",
+          "FechaHora": "2026-04-01 09:20:00",
+          "AbnormalFlag": "Alto"
+        },
+        {
+          "Tipo": "Marcadores cardíacos",
+          "Examen": "CK-MB",
+          "Valor": "58",
+          "Unidad": "U/L",
+          "RangoReferencia": "0-25",
+          "FechaHora": "2026-04-01 09:20:00",
+          "AbnormalFlag": "Alto"
+        },
+        {
+          "Tipo": "Marcadores cardíacos",
+          "Examen": "BNP (Pro-BNP)",
+          "Valor": "420",
+          "Unidad": "pg/mL",
+          "RangoReferencia": "0-125",
+          "FechaHora": "2026-04-01 09:20:00",
+          "AbnormalFlag": "Alto"
+        },
+        {
+          "Tipo": "Perfil bioquímico",
+          "Examen": "Glucosa",
+          "Valor": "112",
+          "Unidad": "mg/dL",
+          "RangoReferencia": "70-100",
+          "FechaHora": "2026-04-01 09:15:00",
+          "AbnormalFlag": "Alto"
+        },
+        {
+          "Tipo": "Perfil bioquímico",
+          "Examen": "Creatinina",
+          "Valor": "1.1",
+          "Unidad": "mg/dL",
+          "RangoReferencia": "0.7-1.2",
+          "FechaHora": "2026-04-01 09:15:00",
+          "AbnormalFlag": "Normal"
+        },
+        {
+          "Tipo": "Perfil bioquímico",
+          "Examen": "Colesterol total",
+          "Valor": "238",
+          "Unidad": "mg/dL",
+          "RangoReferencia": "<200",
+          "FechaHora": "2026-04-01 09:15:00",
+          "AbnormalFlag": "Alto"
+        },
+        {
+          "Tipo": "Perfil bioquímico",
+          "Examen": "LDL",
+          "Valor": "162",
+          "Unidad": "mg/dL",
+          "RangoReferencia": "<100",
+          "FechaHora": "2026-04-01 09:15:00",
+          "AbnormalFlag": "Alto"
+        },
+        {
+          "Tipo": "Coagulación",
+          "Examen": "TTPA",
+          "Valor": "42",
+          "Unidad": "seg",
+          "RangoReferencia": "25-35",
+          "FechaHora": "2026-04-01 10:00:00",
+          "AbnormalFlag": "Alto"
+        },
+        {
+          "Tipo": "Coagulación",
+          "Examen": "INR",
+          "Valor": "1.2",
+          "Unidad": "",
+          "RangoReferencia": "0.8-1.2",
+          "FechaHora": "2026-04-01 10:00:00",
+          "AbnormalFlag": "Normal"
+        },
+        {
+          "Tipo": "Radiología",
+          "Examen": "Radiografía de tórax AP",
+          "Valor": "Cardiomegalia leve. ICT 0.52",
+          "Unidad": "",
+          "RangoReferencia": "ICT < 0.50",
+          "FechaHora": "2025-01-20 14:30:00",
+          "AbnormalFlag": "Alterado",
+          "Medico": "Dr. Ramírez (Radiólogo)",
+          "Conclusion": "Índice cardiotorácico 0.52. Silueta cardíaca discretamente aumentada. Campos pulmonares sin infiltrados. Sin derrame pleural."
+        },
+        {
+          "Tipo": "Radiología",
+          "Examen": "Ecocardiografía transtorácica",
+          "Valor": "FEVI 58%",
+          "Unidad": "%",
+          "RangoReferencia": ">55",
+          "FechaHora": "2024-07-08 09:15:00",
+          "AbnormalFlag": "Normal",
+          "Medico": "Dra. Silva (Radiología)",
+          "Conclusion": "FEVI conservada 58%. Hipertrofia concéntrica leve VI. Disfunción diastólica grado I. Válvulas morfológicamente normales."
+        },
+        {
+          "Tipo": "Radiología",
+          "Examen": "ECG 12 derivaciones",
+          "Valor": "Supradesnivel ST V1-V4 máx 2mm",
+          "Unidad": "mm",
+          "RangoReferencia": "< 1mm",
+          "FechaHora": "2026-04-01 08:45:00",
+          "AbnormalFlag": "Crítico",
+          "Medico": "Dr. García López",
+          "Conclusion": "Ritmo sinusal FC 88 lpm. Supradesnivel ST de 1-2mm en V1-V4 con imagen de bloqueo de rama izquierda nuevo. Compatible con NSTEMI anterior."
+        }
+      ],
+      "RegistrosOffline": [
+        {
+          "FechaHora": "2026-04-01 12:00:00",
+          "Responsable": "Dr. García López",
+          "Nota": "Paciente ingresa por dolor torácico opresivo 8/10 de 2 horas de evolución. ECG con cambios en ST en V1-V4. Se activa protocolo SCA. Inicia anticoagulación y doble antiagregación. Troponinas en ascenso. Hemodinamia solicitada."
+        },
+        {
+          "FechaHora": "2026-04-01 18:30:00",
+          "Responsable": "Dr. García López",
+          "Nota": "Paciente evoluciona estable. Dolor torácico cedió con tratamiento. Segunda troponina en 1.96 ng/mL (tendencia descendente). Monitorización continua sin arritmias. Hemodinamia programada para mañana."
+        }
+      ]
+    }
+  },
+
+  {
+    "MRN": "MRN369258",
+    "NumEpisodio": "EP2026031500020001",
+    "RUN": "17.330.094-5",
+    "Paciente": "Valentina Paz Herrera Salinas",
+    "Nombre": "Valentina Paz Herrera Salinas",
+    "FechaNacimiento": "1984-08-27",
+    "Sexo": "F",
+    "Tipo": "Urgencia",
+    "FechaAtencion": "2026-03-15 22:10:00",
+    "Hospital": "Hospital Regional",
+    "Habitacion": "Box 3",
+    "Cama": "1",
+    "Ubicacion": "Box 3-1",
+    "Estado": "En atención",
+    "Profesional": "Dra. López Morales",
+    "MotivoConsulta": "Dolor abdominal en cuadrante inferior derecho, náuseas y fiebre 38.5°C",
+    "Antecedentes": {
+      "Alergias": [
+        {
+          "Alergia": "Ibuprofeno",
+          "Tipo": "Medicamentosa",
+          "Severidad": "Moderada",
+          "Fecha": "2019-03-01",
+          "Activa": true
+        },
+        {
+          "Alergia": "Mariscos",
+          "Tipo": "Ambiental/Alimentaria",
+          "Severidad": "Severa",
+          "Fecha": "2012-11-15",
+          "Activa": true
+        }
+      ],
+      "Encuentros": [
+        {
+          "FechaHora": "2026-03-15 22:10:00",
+          "Medico": "Dra. López Morales",
+          "Especialidad": "Urgencia",
+          "Tipo": "Urgencia",
+          "MotivoConsulta": "Dolor abdominal en cuadrante inferior derecho, náuseas y fiebre 38.5°C",
+          "Diagnosticos": [
+            { "Glosa": "Apendicitis aguda no perforada" }
+          ],
+          "Medicamentos": [
+            { "Glosa": "Ceftriaxona 2g IV cada 24 horas" },
+            { "Glosa": "Metronidazol 500mg IV cada 8 horas" },
+            { "Glosa": "Paracetamol 1g IV cada 8 horas" },
+            { "Glosa": "Morfina 4mg IV en caso de dolor severo" }
+          ],
+          "Indicaciones": [
+            { "Glosa": "Ayuno total" },
+            { "Glosa": "Hidratación IV con suero fisiológico 0.9% 1000cc a pasar en 6 horas" },
+            { "Glosa": "Preparación prequirúrgica" },
+            { "Glosa": "Consentimiento informado para apendicectomía laparoscópica" }
+          ]
+        },
+        {
+          "FechaHora": "2025-07-10 11:00:00",
+          "Medico": "Dr. Fernández Ruiz",
+          "Especialidad": "Medicina General",
+          "Tipo": "Consulta",
+          "MotivoConsulta": "Dolor abdominal recurrente",
+          "Diagnosticos": [
+            { "Glosa": "Síndrome de intestino irritable" },
+            { "Glosa": "Gastritis crónica" }
+          ],
+          "Medicamentos": [
+            { "Glosa": "Omeprazol 20mg cada 24 horas por 30 días" },
+            { "Glosa": "Mebeverina 135mg cada 8 horas" }
+          ],
+          "Indicaciones": [
+            { "Glosa": "Dieta baja en FODMAPs" },
+            { "Glosa": "Evitar alimentos irritantes" },
+            { "Glosa": "Control en 1 mes" }
+          ]
+        },
+        {
+          "FechaHora": "2026-03-15 23:30:00",
+          "Medico": "Dra. Silva (Radiología)",
+          "Especialidad": "Imagenología",
+          "Tipo": "Estudio de imagen",
+          "MotivoConsulta": "Ecografía abdominal para evaluación de fosa ilíaca derecha",
+          "Diagnosticos": [
+            { "Glosa": "Apéndice cecal visible, engrosado, con diámetro > 10mm" },
+            { "Glosa": "Compatible con apendicitis aguda" }
+          ],
+          "Medicamentos": [],
+          "Indicaciones": [
+            { "Glosa": "Apéndice cecal visualizado con diámetro de 11mm, sin compresibilidad, con aumento de la ecogenicidad periapendicular. Adenopatías mesentéricas reactivas. Escaso líquido libre pericecal. Hallazgos compatibles con apendicitis aguda no complicada." }
+          ]
+        },
+        {
+          "FechaHora": "2024-02-20 10:30:00",
+          "Medico": "Dr. Ramírez (Radiólogo)",
+          "Especialidad": "Imagenología",
+          "Tipo": "Estudio de imagen",
+          "MotivoConsulta": "Radiografía de abdomen simple",
+          "Diagnosticos": [
+            { "Glosa": "Sin hallazgos patológicos agudos" }
+          ],
+          "Medicamentos": [],
+          "Indicaciones": [
+            { "Glosa": "Distribución gaseosa normal. Sin niveles hidroaéreos. Sin opacidades anormales. Sin calcificaciones. Estudio dentro de límites normales." }
+          ]
+        }
+      ],
+      "Resultados": [
+        {
+          "Tipo": "Hemograma completo",
+          "Examen": "Leucocitos",
+          "Valor": "16.4",
+          "Unidad": "x10^3/uL",
+          "RangoReferencia": "4.0-11.0",
+          "FechaHora": "2026-03-15 22:40:00",
+          "AbnormalFlag": "Alto"
+        },
+        {
+          "Tipo": "Hemograma completo",
+          "Examen": "Neutrófilos",
+          "Valor": "88",
+          "Unidad": "%",
+          "RangoReferencia": "50-70",
+          "FechaHora": "2026-03-15 22:40:00",
+          "AbnormalFlag": "Alto"
+        },
+        {
+          "Tipo": "Hemograma completo",
+          "Examen": "Hemoglobina",
+          "Valor": "12.8",
+          "Unidad": "g/dL",
+          "RangoReferencia": "12.0-16.0",
+          "FechaHora": "2026-03-15 22:40:00",
+          "AbnormalFlag": "Normal"
+        },
+        {
+          "Tipo": "Hemograma completo",
+          "Examen": "Plaquetas",
+          "Valor": "310",
+          "Unidad": "x10^3/uL",
+          "RangoReferencia": "150-400",
+          "FechaHora": "2026-03-15 22:40:00",
+          "AbnormalFlag": "Normal"
+        },
+        {
+          "Tipo": "Proteína C Reactiva",
+          "Examen": "PCR ultrasensible",
+          "Valor": "98.4",
+          "Unidad": "mg/L",
+          "RangoReferencia": "0-5",
+          "FechaHora": "2026-03-15 22:45:00",
+          "AbnormalFlag": "Alto"
+        },
+        {
+          "Tipo": "Perfil bioquímico",
+          "Examen": "Glucosa",
+          "Valor": "95",
+          "Unidad": "mg/dL",
+          "RangoReferencia": "70-100",
+          "FechaHora": "2026-03-15 22:40:00",
+          "AbnormalFlag": "Normal"
+        },
+        {
+          "Tipo": "Perfil bioquímico",
+          "Examen": "Creatinina",
+          "Valor": "0.8",
+          "Unidad": "mg/dL",
+          "RangoReferencia": "0.5-1.1",
+          "FechaHora": "2026-03-15 22:40:00",
+          "AbnormalFlag": "Normal"
+        },
+        {
+          "Tipo": "Orina completa",
+          "Examen": "Leucocitos en orina",
+          "Valor": "5",
+          "Unidad": "por campo",
+          "RangoReferencia": "0-5",
+          "FechaHora": "2026-03-15 23:00:00",
+          "AbnormalFlag": "Normal"
+        },
+        {
+          "Tipo": "Orina completa",
+          "Examen": "Nitritos",
+          "Valor": "Negativo",
+          "Unidad": "",
+          "RangoReferencia": "Negativo",
+          "FechaHora": "2026-03-15 23:00:00",
+          "AbnormalFlag": "Normal"
+        },
+        {
+          "Tipo": "Coagulación",
+          "Examen": "INR",
+          "Valor": "1.0",
+          "Unidad": "",
+          "RangoReferencia": "0.8-1.2",
+          "FechaHora": "2026-03-15 23:05:00",
+          "AbnormalFlag": "Normal"
+        },
+        {
+          "Tipo": "Coagulación",
+          "Examen": "Tiempo de protrombina",
+          "Valor": "12.5",
+          "Unidad": "seg",
+          "RangoReferencia": "11-14",
+          "FechaHora": "2026-03-15 23:05:00",
+          "AbnormalFlag": "Normal"
+        },
+        {
+          "Tipo": "Grupo sanguíneo",
+          "Examen": "Grupo ABO",
+          "Valor": "A",
+          "Unidad": "",
+          "RangoReferencia": "",
+          "FechaHora": "2026-03-15 23:10:00",
+          "AbnormalFlag": "Informativo"
+        },
+        {
+          "Tipo": "Grupo sanguíneo",
+          "Examen": "Factor Rh",
+          "Valor": "Positivo",
+          "Unidad": "",
+          "RangoReferencia": "",
+          "FechaHora": "2026-03-15 23:10:00",
+          "AbnormalFlag": "Informativo"
+        },
+        {
+          "Tipo": "Radiología",
+          "Examen": "Ecografía abdominal — fosa ilíaca derecha",
+          "Valor": "Apéndice 11mm no compresible",
+          "Unidad": "mm",
+          "RangoReferencia": "< 6mm",
+          "FechaHora": "2026-03-15 23:30:00",
+          "AbnormalFlag": "Crítico",
+          "Medico": "Dra. Silva (Radiología)",
+          "Conclusion": "Apéndice cecal de 11mm de diámetro, sin compresibilidad, con aumento de ecogenicidad periapendicular. Líquido libre pericecal escaso. Adenopatías mesentéricas reactivas. Compatible con apendicitis aguda no complicada."
+        },
+        {
+          "Tipo": "Radiología",
+          "Examen": "Radiografía de abdomen simple",
+          "Valor": "Sin hallazgos agudos",
+          "Unidad": "",
+          "RangoReferencia": "Normal",
+          "FechaHora": "2024-02-20 10:30:00",
+          "AbnormalFlag": "Normal",
+          "Medico": "Dr. Ramírez (Radiólogo)",
+          "Conclusion": "Distribución gaseosa normal. Sin niveles hidroaéreos. Sin opacidades anormales. Sin calcificaciones. Estudio dentro de límites normales."
+        }
+      ],
+      "RegistrosOffline": [
+        {
+          "FechaHora": "2026-03-15 22:30:00",
+          "Responsable": "Dra. López Morales",
+          "Nota": "Paciente femenina 41 años ingresa por cuadro de 12 horas de dolor abdominal en FID, náuseas y temperatura de 38.5°C. Signo de Blumberg positivo. Escala de Alvarado 8/10. Solicitados exámenes urgentes y ecografía abdominal. Cirugía avisada."
+        },
+        {
+          "FechaHora": "2026-03-16 01:15:00",
+          "Responsable": "Dra. López Morales",
+          "Nota": "Ecografía confirma apendicitis aguda. PCR en 98 mg/L. Leucocitosis 16.400 con desviación izquierda. Paciente trasladada a pabellón para apendicectomía laparoscópica urgente. Cirujano de turno Dr. Campos avisado y presente."
+        }
+      ]
+    }
+  },
+
+  {
+    "MRN": "MRN852963",
+    "NumEpisodio": "EP2026050800030001",
+    "RUN": "11.228.740-2",
+    "Paciente": "Marcelo Ignacio Fuentes Riquelme",
+    "Nombre": "Marcelo Ignacio Fuentes Riquelme",
+    "FechaNacimiento": "1952-11-05",
+    "Sexo": "M",
+    "Tipo": "Hospitalización",
+    "FechaAtencion": "2026-05-08 14:00:00",
+    "Hospital": "Clínica Santa María",
+    "Habitacion": "201",
+    "Cama": "A",
+    "Ubicacion": "201-A",
+    "Estado": "Admitido",
+    "Profesional": "Dra. Martínez Silva",
+    "MotivoConsulta": "Tos productiva, disnea progresiva y baja de peso de 6 kg en 2 meses",
+    "Antecedentes": {
+      "Alergias": [
+        {
+          "Alergia": "Sulfonamidas",
+          "Tipo": "Medicamentosa",
+          "Severidad": "Moderada",
+          "Fecha": "2008-04-12",
+          "Activa": true
+        },
+        {
+          "Alergia": "Látex",
+          "Tipo": "Ambiental/Alimentaria",
+          "Severidad": "Leve",
+          "Fecha": "2010-09-30",
+          "Activa": true
+        },
+        {
+          "Alergia": "Aspirina",
+          "Tipo": "Medicamentosa",
+          "Severidad": "Leve",
+          "Fecha": "2003-01-20",
+          "Activa": false
+        }
+      ],
+      "Encuentros": [
+        {
+          "FechaHora": "2026-05-08 14:00:00",
+          "Medico": "Dra. Martínez Silva",
+          "Especialidad": "Neumología",
+          "Tipo": "Hospitalización",
+          "MotivoConsulta": "Tos productiva, disnea progresiva y baja de peso de 6 kg en 2 meses",
+          "Diagnosticos": [
+            { "Glosa": "Masa pulmonar lóbulo superior derecho en estudio — probable neoplasia" },
+            { "Glosa": "Enfermedad Pulmonar Obstructiva Crónica (EPOC) estadio II" },
+            { "Glosa": "Ex tabaquista (40 paquetes-año)" }
+          ],
+          "Medicamentos": [
+            { "Glosa": "Tiotropio 18mcg inhalado cada 24 horas" },
+            { "Glosa": "Salbutamol 200mcg inhalado cada 6 horas si disnea" },
+            { "Glosa": "Paracetamol 1g oral cada 8 horas" },
+            { "Glosa": "Omeprazol 20mg oral cada 24 horas" }
+          ],
+          "Indicaciones": [
+            { "Glosa": "Oxigenoterapia por naricera titulando a saturación >92%" },
+            { "Glosa": "Broncoscopía con biopsia programada para mañana 09:00 hrs" },
+            { "Glosa": "PET-CT programado para la próxima semana" },
+            { "Glosa": "Interconsulta a oncología" }
+          ]
+        },
+        {
+          "FechaHora": "2026-02-14 09:00:00",
+          "Medico": "Dr. Fernández Ruiz",
+          "Especialidad": "Medicina General",
+          "Tipo": "Consulta",
+          "MotivoConsulta": "Tos persistente de 3 semanas y hemoptisis leve",
+          "Diagnosticos": [
+            { "Glosa": "Hemoptisis leve en estudio" },
+            { "Glosa": "EPOC reagudizado" }
+          ],
+          "Medicamentos": [
+            { "Glosa": "Amoxicilina/Clavulánico 875/125mg cada 12 horas por 7 días" },
+            { "Glosa": "Prednisona 40mg cada 24 horas por 5 días con reducción progresiva" }
+          ],
+          "Indicaciones": [
+            { "Glosa": "Radiografía de tórax urgente" },
+            { "Glosa": "Si no mejora o persiste hemoptisis derivar a neumología" }
+          ]
+        },
+        {
+          "FechaHora": "2026-03-01 16:30:00",
+          "Medico": "Dr. Campos (Imágenes)",
+          "Especialidad": "Imagenología",
+          "Tipo": "Estudio de imagen",
+          "MotivoConsulta": "TAC de tórax con contraste — estudio de masa pulmonar",
+          "Diagnosticos": [
+            { "Glosa": "Masa sólida espiculada de 3.8 x 3.2 cm en lóbulo superior derecho" },
+            { "Glosa": "Adenopatías mediastínicas ipsilaterales — eje corto > 1 cm" },
+            { "Glosa": "Hallazgos sugestivos de neoplasia pulmonar primaria" }
+          ],
+          "Medicamentos": [],
+          "Indicaciones": [
+            { "Glosa": "Masa sólida espiculada de 3.8 x 3.2 cm en segmento posterior del lóbulo superior derecho con retracción pleural. Adenopatías en estaciones 4R y 7 con eje corto entre 12-15mm. Signos de atrapamiento aéreo difuso bilaterales compatibles con EPOC. Sin derrame pleural. Sin metástasis parenquimatosas visibles. Clasificación Fleischner: categoría 4B. Se recomienda broncoscopía y evaluación oncológica." }
+          ]
+        },
+        {
+          "FechaHora": "2026-05-09 09:30:00",
+          "Medico": "Dr. Ramírez (Radiólogo)",
+          "Especialidad": "Imagenología",
+          "Tipo": "Estudio de imagen",
+          "MotivoConsulta": "Broncoscopía con biopsia de masa en lóbulo superior derecho",
+          "Diagnosticos": [
+            { "Glosa": "Biopsias tomadas — resultado anatomopatológico pendiente (48-72 hrs)" }
+          ],
+          "Medicamentos": [],
+          "Indicaciones": [
+            { "Glosa": "Broncoscopía flexible bajo sedación consciente. Mucosa bronquial con irregularidades en bronquio del lóbulo superior derecho. Tomadas 4 biopsias fórceps y cepillado bronquial. Lavado broncoalveolar enviado a microbiología y citología. Procedimiento sin complicaciones. Paciente toleró bien. Observación 4 horas post-procedimiento." }
+          ]
+        },
+        {
+          "FechaHora": "2023-11-10 10:00:00",
+          "Medico": "Dra. Martínez Silva",
+          "Especialidad": "Neumología",
+          "Tipo": "Control",
+          "MotivoConsulta": "Control anual EPOC",
+          "Diagnosticos": [
+            { "Glosa": "EPOC estadio II (GOLD 2), estable" }
+          ],
+          "Medicamentos": [
+            { "Glosa": "Tiotropio 18mcg inhalado cada 24 horas" },
+            { "Glosa": "Indacaterol 150mcg inhalado cada 24 horas" }
+          ],
+          "Indicaciones": [
+            { "Glosa": "Espirometría post-broncodilatador: FEV1 62% del teórico, FEV1/FVC 0.64" },
+            { "Glosa": "Vacunación antineumocócica y antigripal al día" },
+            { "Glosa": "Control en 12 meses o antes si síntomas" }
+          ]
+        },
+        {
+          "FechaHora": "2022-06-18 11:30:00",
+          "Medico": "Dr. García López",
+          "Especialidad": "Cardiología",
+          "Tipo": "Control",
+          "MotivoConsulta": "Control de hipertensión y evaluación cardiovascular",
+          "Diagnosticos": [
+            { "Glosa": "Hipertensión arterial esencial estadio I, controlada" },
+            { "Glosa": "Cor pulmonale leve secundario a EPOC" }
+          ],
+          "Medicamentos": [
+            { "Glosa": "Amlodipino 5mg cada 24 horas" },
+            { "Glosa": "Enalapril 10mg cada 12 horas" }
+          ],
+          "Indicaciones": [
+            { "Glosa": "Ecocardiograma anual" },
+            { "Glosa": "Monitoreo de PA en domicilio" }
+          ]
+        }
+      ],
+      "Resultados": [
+        {
+          "Tipo": "Hemograma completo",
+          "Examen": "Leucocitos",
+          "Valor": "9.2",
+          "Unidad": "x10^3/uL",
+          "RangoReferencia": "4.0-11.0",
+          "FechaHora": "2026-05-08 15:00:00",
+          "AbnormalFlag": "Normal"
+        },
+        {
+          "Tipo": "Hemograma completo",
+          "Examen": "Hemoglobina",
+          "Valor": "11.2",
+          "Unidad": "g/dL",
+          "RangoReferencia": "13.5-17.5",
+          "FechaHora": "2026-05-08 15:00:00",
+          "AbnormalFlag": "Bajo"
+        },
+        {
+          "Tipo": "Hemograma completo",
+          "Examen": "Hematocrito",
+          "Valor": "34",
+          "Unidad": "%",
+          "RangoReferencia": "41-53",
+          "FechaHora": "2026-05-08 15:00:00",
+          "AbnormalFlag": "Bajo"
+        },
+        {
+          "Tipo": "Hemograma completo",
+          "Examen": "Plaquetas",
+          "Valor": "422",
+          "Unidad": "x10^3/uL",
+          "RangoReferencia": "150-400",
+          "FechaHora": "2026-05-08 15:00:00",
+          "AbnormalFlag": "Alto"
+        },
+        {
+          "Tipo": "Proteína C Reactiva",
+          "Examen": "PCR ultrasensible",
+          "Valor": "42.1",
+          "Unidad": "mg/L",
+          "RangoReferencia": "0-5",
+          "FechaHora": "2026-05-08 15:05:00",
+          "AbnormalFlag": "Alto"
+        },
+        {
+          "Tipo": "Marcadores tumorales",
+          "Examen": "CEA (Antígeno carcinoembrionario)",
+          "Valor": "18.4",
+          "Unidad": "ng/mL",
+          "RangoReferencia": "0-3.4",
+          "FechaHora": "2026-05-08 15:10:00",
+          "AbnormalFlag": "Alto"
+        },
+        {
+          "Tipo": "Marcadores tumorales",
+          "Examen": "NSE (Enolasa neuronal específica)",
+          "Valor": "24.8",
+          "Unidad": "ng/mL",
+          "RangoReferencia": "0-16.3",
+          "FechaHora": "2026-05-08 15:10:00",
+          "AbnormalFlag": "Alto"
+        },
+        {
+          "Tipo": "Marcadores tumorales",
+          "Examen": "CYFRA 21-1",
+          "Valor": "8.2",
+          "Unidad": "ng/mL",
+          "RangoReferencia": "0-3.3",
+          "FechaHora": "2026-05-08 15:10:00",
+          "AbnormalFlag": "Alto"
+        },
+        {
+          "Tipo": "Perfil bioquímico",
+          "Examen": "Glucosa",
+          "Valor": "103",
+          "Unidad": "mg/dL",
+          "RangoReferencia": "70-100",
+          "FechaHora": "2026-05-08 15:00:00",
+          "AbnormalFlag": "Alto"
+        },
+        {
+          "Tipo": "Perfil bioquímico",
+          "Examen": "Creatinina",
+          "Valor": "1.0",
+          "Unidad": "mg/dL",
+          "RangoReferencia": "0.7-1.2",
+          "FechaHora": "2026-05-08 15:00:00",
+          "AbnormalFlag": "Normal"
+        },
+        {
+          "Tipo": "Perfil bioquímico",
+          "Examen": "LDH",
+          "Valor": "380",
+          "Unidad": "U/L",
+          "RangoReferencia": "135-225",
+          "FechaHora": "2026-05-08 15:00:00",
+          "AbnormalFlag": "Alto"
+        },
+        {
+          "Tipo": "Función hepática",
+          "Examen": "GOT (AST)",
+          "Valor": "48",
+          "Unidad": "U/L",
+          "RangoReferencia": "0-40",
+          "FechaHora": "2026-05-08 15:00:00",
+          "AbnormalFlag": "Alto"
+        },
+        {
+          "Tipo": "Función hepática",
+          "Examen": "GPT (ALT)",
+          "Valor": "35",
+          "Unidad": "U/L",
+          "RangoReferencia": "0-40",
+          "FechaHora": "2026-05-08 15:00:00",
+          "AbnormalFlag": "Normal"
+        },
+        {
+          "Tipo": "Función hepática",
+          "Examen": "Fosfatasa alcalina",
+          "Valor": "198",
+          "Unidad": "U/L",
+          "RangoReferencia": "40-150",
+          "FechaHora": "2026-05-08 15:00:00",
+          "AbnormalFlag": "Alto"
+        },
+        {
+          "Tipo": "Gasometría arterial",
+          "Examen": "PaO2",
+          "Valor": "62",
+          "Unidad": "mmHg",
+          "RangoReferencia": "80-100",
+          "FechaHora": "2026-05-08 15:30:00",
+          "AbnormalFlag": "Bajo"
+        },
+        {
+          "Tipo": "Gasometría arterial",
+          "Examen": "PaCO2",
+          "Valor": "48",
+          "Unidad": "mmHg",
+          "RangoReferencia": "35-45",
+          "FechaHora": "2026-05-08 15:30:00",
+          "AbnormalFlag": "Alto"
+        },
+        {
+          "Tipo": "Gasometría arterial",
+          "Examen": "SatO2",
+          "Valor": "91",
+          "Unidad": "%",
+          "RangoReferencia": ">95",
+          "FechaHora": "2026-05-08 15:30:00",
+          "AbnormalFlag": "Bajo"
+        },
+        {
+          "Tipo": "Gasometría arterial",
+          "Examen": "pH",
+          "Valor": "7.38",
+          "Unidad": "",
+          "RangoReferencia": "7.35-7.45",
+          "FechaHora": "2026-05-08 15:30:00",
+          "AbnormalFlag": "Normal"
+        },
+        {
+          "Tipo": "Radiología",
+          "Examen": "TAC de tórax con contraste — masa LSD",
+          "Valor": "Masa espiculada 3.8 x 3.2 cm",
+          "Unidad": "cm",
+          "RangoReferencia": "Sin masa",
+          "FechaHora": "2026-03-01 16:30:00",
+          "AbnormalFlag": "Crítico",
+          "Medico": "Dr. Campos (Imágenes)",
+          "Conclusion": "Masa sólida espiculada de 3.8 x 3.2 cm en segmento posterior del LSD con retracción pleural. Adenopatías 4R y 7 con eje corto 12-15mm. Signos de atrapamiento aéreo bilateral. Clasificación Fleischner 4B. Se recomienda broncoscopía y evaluación oncológica."
+        },
+        {
+          "Tipo": "Radiología",
+          "Examen": "Radiografía de tórax PA",
+          "Valor": "Opacidad en campo superior derecho",
+          "Unidad": "",
+          "RangoReferencia": "Sin opacidades",
+          "FechaHora": "2026-02-14 09:30:00",
+          "AbnormalFlag": "Alterado",
+          "Medico": "Dr. Ramírez (Radiólogo)",
+          "Conclusion": "Opacidad de bordes mal definidos en tercio superior del campo pulmonar derecho, de aproximadamente 3 cm. Hiperinsuflación bilateral. No se observa derrame pleural. Hallazgos requieren estudio con TAC."
+        },
+        {
+          "Tipo": "Radiología",
+          "Examen": "Broncoscopía flexible con biopsia",
+          "Valor": "Irregularidades mucosa bronquio LSD — 4 biopsias tomadas",
+          "Unidad": "",
+          "RangoReferencia": "Mucosa normal",
+          "FechaHora": "2026-05-09 09:30:00",
+          "AbnormalFlag": "Alterado",
+          "Medico": "Dr. Ramírez (Radiólogo)",
+          "Conclusion": "Mucosa bronquial con irregularidades en bronquio lobar superior derecho. 4 biopsias fórceps y cepillado bronquial. Lavado broncoalveolar enviado a microbiología y citología. Resultado anatomopatológico pendiente 48-72 hrs. Sin complicaciones."
+        },
+        {
+          "Tipo": "Radiología",
+          "Examen": "Espirometría post-broncodilatador",
+          "Valor": "FEV1 62% — FEV1/FVC 0.64",
+          "Unidad": "%",
+          "RangoReferencia": "FEV1 > 80%, FEV1/FVC > 0.70",
+          "FechaHora": "2023-11-10 10:30:00",
+          "AbnormalFlag": "Alterado",
+          "Medico": "Dra. Martínez Silva",
+          "Conclusion": "Patrón obstructivo moderado. FEV1 62% del valor teórico. FEV1/FVC 0.64 (< 0.70 confirma obstrucción). Compatible con EPOC estadio II GOLD."
+        }
+      ],
+      "RegistrosOffline": [
+        {
+          "FechaHora": "2026-05-08 16:00:00",
+          "Responsable": "Dra. Martínez Silva",
+          "Nota": "Paciente masculino 73 años con antecedente de EPOC y tabaquismo importante (40 paquetes-año). Ingresa por cuadro de 2 meses de tos productiva, disnea de moderados esfuerzos y baja de peso de 6 kg. TAC de marzo con masa de 3.8 cm en LSD con adenopatías mediastínicas. Marcadores tumorales CEA y CYFRA elevados. Se programa broncoscopía con biopsia para mañana. Saturación en 91% con O2 por naricera a 2 L. Paciente y familia informados."
+        },
+        {
+          "FechaHora": "2026-05-09 12:00:00",
+          "Responsable": "Dra. Martínez Silva",
+          "Nota": "Post-broncoscopía sin complicaciones. Paciente tolera bien el procedimiento. Biopsia enviada a anatomía patológica con resultado en 48-72 hrs. Lavado broncoalveolar a microbiología para descartar proceso infeccioso concomitante. Saturación estable 93% con O2. PET-CT coordinado para el 13/05. Interconsulta a oncología respondida — evaluarán resultados anatomopatológicos antes de definir etapificación y plan terapéutico."
+        },
+        {
+          "FechaHora": "2026-05-09 20:00:00",
+          "Responsable": "Dr. García López",
+          "Nota": "Evolución nocturna estable. Signos vitales: PA 138/82, FC 78, T 37.1, SatO2 92% con naricera 2 L. Sin nuevas complicaciones. Paciente con buen ánimo, acompañado de familiar. Se mantiene plan indicado. Pendiente resultado de biopsia bronquial."
+        }
+      ]
+    }
+  }
+]
