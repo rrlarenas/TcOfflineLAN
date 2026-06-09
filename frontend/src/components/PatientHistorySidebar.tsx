@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { parseServerDate } from '../lib/timeAgo';
 import type { EpisodeData, ResultadoHistorico, RegistroOffline } from '../types';
 
 interface PatientHistorySidebarProps {
@@ -22,7 +23,7 @@ export function PatientHistorySidebar({ episodeData }: PatientHistorySidebarProp
 
   const formatDateTime = (dateString?: string) => {
     if (!dateString) return '-';
-    return new Date(dateString).toLocaleString('es-CL', {
+    return parseServerDate(dateString).toLocaleString('es-CL', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
@@ -33,7 +34,7 @@ export function PatientHistorySidebar({ episodeData }: PatientHistorySidebarProp
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('es-CL', {
+    return parseServerDate(dateString).toLocaleDateString('es-CL', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',

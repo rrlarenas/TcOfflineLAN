@@ -5,6 +5,7 @@ import { PatientHistorySidebar } from '../components/PatientHistorySidebar';
 import { api } from '../lib/api';
 import { useUser } from '../contexts/UserContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { parseServerDate } from '../lib/timeAgo';
 import type { EpisodeDetail, ClinicalNote, PredefinedText } from '../types';
 
 export function ClinicalNote() {
@@ -152,7 +153,7 @@ export function ClinicalNote() {
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('es-CL', {
+    return parseServerDate(dateString).toLocaleDateString(language === 'es' ? 'es-CL' : 'en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -161,7 +162,7 @@ export function ClinicalNote() {
 
   const formatDateTime = (dateString?: string) => {
     if (!dateString) return '-';
-    const date = new Date(dateString);
+    const date = parseServerDate(dateString);
     const day = date.getDate().toString().padStart(2, '0');
     const months = language === 'es'
       ? ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']

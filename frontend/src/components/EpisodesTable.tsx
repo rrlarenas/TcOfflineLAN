@@ -1,5 +1,6 @@
 import type { Episode } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
+import { parseServerDate } from '../lib/timeAgo';
 
 interface EpisodesTableProps {
   episodes: Episode[];
@@ -10,7 +11,7 @@ export function EpisodesTable({ episodes, onEpisodeClick }: EpisodesTableProps) 
   const { t, language } = useLanguage();
   const formatDateTime = (dateString?: string) => {
     if (!dateString) return '-';
-    const date = new Date(dateString);
+    const date = parseServerDate(dateString);
     const day = date.getDate().toString().padStart(2, '0');
     const monthsEs = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
     const monthsEn = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];

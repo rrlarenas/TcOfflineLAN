@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { api } from '../lib/api';
 import { auth } from '../lib/auth';
 import { useLanguage } from '../contexts/LanguageContext';
+import { parseServerDate } from '../lib/timeAgo';
 import type { User, SystemConfig, PredefinedText } from '../types';
 
 interface UserSettingsModalProps {
@@ -789,7 +790,7 @@ export function UserSettingsModal({ isOpen, onClose, user, onUserUpdated }: User
                           </div>
                           <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 whitespace-pre-wrap">{pt.content}</p>
                           <p className="text-xs text-gray-400 dark:text-gray-600 mt-1">
-                            {new Date(pt.updated_at).toLocaleDateString('es-CL')}
+                            {parseServerDate(pt.updated_at).toLocaleDateString('es-CL')}
                           </p>
                         </div>
                       )}

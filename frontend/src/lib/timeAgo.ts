@@ -1,5 +1,17 @@
 import type { TranslationKeys } from '../config/lang_es';
 
+/**
+ * Parse a server-returned date string as UTC.
+ * SQLite/Postgres return ISO strings without 'Z'; browsers would misinterpret
+ * them as local time. Adding 'Z' forces correct UTC interpretation.
+ */
+export function parseServerDate(dateString: string): Date {
+  if (!dateString.endsWith('Z') && !dateString.includes('+')) {
+    return new Date(dateString + 'Z');
+  }
+  return new Date(dateString);
+}
+
 export function formatTimeAgo(date: Date | string | null, t: TranslationKeys['timeAgo']): string {
   if (!date) return '';
 
@@ -8,12 +20,7 @@ export function formatTimeAgo(date: Date | string | null, t: TranslationKeys['ti
 
   // Parse the date string properly - handle ISO strings with or without 'Z'
   if (typeof date === 'string') {
-    // If string doesn't end with Z and looks like ISO format, add Z for UTC
-    if (!date.endsWith('Z') && date.includes('T')) {
-      past = new Date(date + 'Z');
-    } else {
-      past = new Date(date);
-    }
+    past = parseServerDate(date);
   } else {
     past = date;
   }
