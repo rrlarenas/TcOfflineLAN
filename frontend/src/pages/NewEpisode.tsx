@@ -280,7 +280,7 @@ export function NewEpisode() {
                   value={rut}
                   onChange={(e) => handleRutChange(e.target.value)}
                   className={`input-field ${rutError ? 'border-red-500 dark:border-red-600' : ''} ${noDocument ? 'bg-gray-100 dark:bg-gray-800 cursor-not-allowed' : ''}`}
-                  placeholder="12345678-9"
+                  placeholder="Ej: 12345678-9, V-12345678, DNI 12345678"
                   disabled={noDocument}
                 />
                 {rutError && !noDocument && (

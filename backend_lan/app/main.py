@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import auth, episodes, notes, general, sync, admin
+from app.routers import auth, episodes, notes, general, sync, admin, predefined_texts
 from app.db import Base, engine
 from app.settings import settings
 import asyncio
@@ -69,6 +69,7 @@ app.include_router(episodes.router)
 app.include_router(notes.router)
 app.include_router(sync.router)
 app.include_router(admin.router)
+app.include_router(predefined_texts.router)
 
 
 @app.get("/")

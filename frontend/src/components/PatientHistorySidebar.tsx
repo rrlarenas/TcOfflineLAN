@@ -117,11 +117,11 @@ export function PatientHistorySidebar({ episodeData }: PatientHistorySidebarProp
     <>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed top-20 right-0 z-10 bg-blue-600 dark:bg-blue-700 text-white rounded-l-lg shadow-lg p-3 hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
+        className="fixed top-[116px] left-0 z-10 bg-blue-600 dark:bg-blue-700 text-white rounded-r-lg shadow-lg p-3 hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
       >
         <svg
           className={`w-5 h-5 transition-transform duration-300 ${
-            isOpen ? 'rotate-0' : 'rotate-180'
+            isOpen ? 'rotate-180' : 'rotate-0'
           }`}
           fill="none"
           stroke="currentColor"
@@ -132,7 +132,7 @@ export function PatientHistorySidebar({ episodeData }: PatientHistorySidebarProp
       </button>
 
       <div
-        className={`fixed top-16 right-0 h-[calc(100vh-4rem)] bg-white dark:bg-gray-900 shadow-2xl transition-all duration-300 ease-in-out overflow-hidden border-l border-gray-200 dark:border-gray-800 z-50 ${
+        className={`fixed top-16 left-0 h-[calc(100vh-4rem)] bg-white dark:bg-gray-900 shadow-2xl transition-all duration-300 ease-in-out overflow-hidden border-r border-gray-200 dark:border-gray-800 z-50 ${
           isOpen ? 'w-96' : 'w-0'
         }`}
       >

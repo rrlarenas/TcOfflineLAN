@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { api } from '../lib/api';
 import { auth } from '../lib/auth';
 import { useLanguage } from '../contexts/LanguageContext';
-import type { User, SystemConfig } from '../types';
+import type { User, SystemConfig, PredefinedText } from '../types';
 
 interface UserSettingsModalProps {
   isOpen: boolean;
@@ -58,7 +58,7 @@ const DEFAULT_CONFIG: SystemConfig = {
 
 export function UserSettingsModal({ isOpen, onClose, user, onUserUpdated }: UserSettingsModalProps) {
   const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState<'settings' | 'filters' | 'users' | 'system'>('settings');
+  const [activeTab, setActiveTab] = useState<'settings' | 'filters' | 'predefined' | 'users' | 'system'>('settings');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [nombre, setNombre] = useState(user.nombre || '');
@@ -68,6 +68,14 @@ export function UserSettingsModal({ isOpen, onClose, user, onUserUpdated }: User
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  // Predefined texts state
+  const [predefinedTexts, setPredefinedTexts] = useState<PredefinedText[]>([]);
+  const [isLoadingPT, setIsLoadingPT] = useState(false);
+  const [newPTTitle, setNewPTTitle] = useState('');
+  const [newPTContent, setNewPTContent] = useState('');
+  const [isSavingPT, setIsSavingPT] = useState(false);
+  const [editingPT, setEditingPT] = useState<PredefinedText | null>(null);
 
   const [showCreateUser, setShowCreateUser] = useState(false);
   const [newUsername, setNewUsername] = useState('');
@@ -98,6 +106,75 @@ export function UserSettingsModal({ isOpen, onClose, user, onUserUpdated }: User
       }
     }
   }, [isOpen, user.is_admin]);
+
+  useEffect(() => {
+    if (isOpen && activeTab === 'predefined') {
+      loadPredefinedTexts();
+    }
+  }, [isOpen, activeTab]);
+
+  const loadPredefinedTexts = async () => {
+    setIsLoadingPT(true);
+    try {
+      const list = await api.listPredefinedTexts();
+      setPredefinedTexts(list);
+    } catch (err) {
+      console.error('Error loading predefined texts:', err);
+    } finally {
+      setIsLoadingPT(false);
+    }
+  };
+
+  const handleAddPT = async () => {
+    if (!newPTTitle.trim() || !newPTContent.trim()) return;
+    setIsSavingPT(true);
+    try {
+      const created = await api.createPredefinedText({ title: newPTTitle.trim(), content: newPTContent.trim() });
+      setPredefinedTexts(prev => [...prev, created]);
+      setNewPTTitle('');
+      setNewPTContent('');
+    } catch (err: any) {
+      setError(err.message || t.userSettings.saveError);
+    } finally {
+      setIsSavingPT(false);
+    }
+  };
+
+  const handleTogglePT = async (pt: PredefinedText) => {
+    try {
+      const updated = await api.updatePredefinedText(pt.id, { active: !pt.active });
+      setPredefinedTexts(prev => prev.map(p => p.id === pt.id ? updated : p));
+    } catch (err: any) {
+      setError(err.message || t.userSettings.saveError);
+    }
+  };
+
+  const handleSaveEditPT = async () => {
+    if (!editingPT) return;
+    setIsSavingPT(true);
+    try {
+      const updated = await api.updatePredefinedText(editingPT.id, {
+        title: editingPT.title,
+        content: editingPT.content,
+      });
+      setPredefinedTexts(prev => prev.map(p => p.id === editingPT.id ? updated : p));
+      setEditingPT(null);
+    } catch (err: any) {
+      setError(err.message || t.userSettings.saveError);
+    } finally {
+      setIsSavingPT(false);
+    }
+  };
+
+  const handleDeletePT = async (pt: PredefinedText) => {
+    if (!window.confirm(t.userSettings.deleteConfirm)) return;
+    try {
+      await api.deletePredefinedText(pt.id);
+      setPredefinedTexts(prev => prev.filter(p => p.id !== pt.id));
+    } catch (err: any) {
+      setError(err.message || t.userSettings.saveError);
+    }
+  };
 
   const loadSystemConfig = async () => {
     setIsLoadingConfig(true);
@@ -271,9 +348,10 @@ export function UserSettingsModal({ isOpen, onClose, user, onUserUpdated }: User
     onClose();
   };
 
-  const tabs: Array<{ id: 'settings' | 'filters' | 'users' | 'system'; label: string; adminOnly?: boolean }> = [
+  const tabs: Array<{ id: 'settings' | 'filters' | 'predefined' | 'users' | 'system'; label: string; adminOnly?: boolean }> = [
     { id: 'settings', label: 'Configuración' },
     { id: 'filters', label: 'Filtros' },
+    { id: 'predefined', label: t.userSettings.predefinedTextsTab },
     ...(user.is_admin ? [
       { id: 'users' as const, label: 'Usuarios', adminOnly: true },
       { id: 'system' as const, label: 'Sistema', adminOnly: true },
@@ -575,6 +653,157 @@ export function UserSettingsModal({ isOpen, onClose, user, onUserUpdated }: User
                 </button>
               </div>
             </form>
+          )}
+
+          {/* --- Tab: Textos Predefinidos --- */}
+          {activeTab === 'predefined' && (
+            <div className="space-y-4">
+              <p className="text-sm text-gray-500 dark:text-gray-400">{t.userSettings.predefinedTextsDesc}</p>
+
+              {/* Formulario nuevo texto */}
+              <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                <div className="px-4 py-2 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                    {t.userSettings.addText}
+                  </span>
+                </div>
+                <div className="p-4 space-y-3">
+                  <input
+                    type="text"
+                    value={newPTTitle}
+                    onChange={e => setNewPTTitle(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                    placeholder={t.userSettings.newTextTitlePlaceholder}
+                    disabled={isSavingPT}
+                  />
+                  <textarea
+                    value={newPTContent}
+                    onChange={e => setNewPTContent(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none min-h-[80px] placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                    placeholder={t.userSettings.newTextContentPlaceholder}
+                    disabled={isSavingPT}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddPT}
+                    disabled={!newPTTitle.trim() || !newPTContent.trim() || isSavingPT}
+                    className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm font-medium"
+                  >
+                    {isSavingPT ? '...' : `+ ${t.userSettings.addText}`}
+                  </button>
+                </div>
+              </div>
+
+              {/* Lista de textos existentes */}
+              {isLoadingPT ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : predefinedTexts.length === 0 ? (
+                <p className="text-sm text-gray-400 dark:text-gray-500 italic text-center py-4">{t.userSettings.noTexts}</p>
+              ) : (
+                <div className="space-y-3">
+                  {predefinedTexts.map(pt => (
+                    <div
+                      key={pt.id}
+                      className={`border rounded-lg overflow-hidden transition-colors ${
+                        pt.active
+                          ? 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900'
+                          : 'border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 opacity-60'
+                      }`}
+                    >
+                      {editingPT?.id === pt.id ? (
+                        <div className="p-4 space-y-3">
+                          <input
+                            type="text"
+                            value={editingPT.title}
+                            onChange={e => setEditingPT({ ...editingPT, title: e.target.value })}
+                            className="w-full px-3 py-2 border border-blue-300 dark:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            disabled={isSavingPT}
+                          />
+                          <textarea
+                            value={editingPT.content}
+                            onChange={e => setEditingPT({ ...editingPT, content: e.target.value })}
+                            className="w-full px-3 py-2 border border-blue-300 dark:border-blue-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none min-h-[80px]"
+                            disabled={isSavingPT}
+                          />
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={handleSaveEditPT}
+                              disabled={isSavingPT}
+                              className="flex-1 px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium transition-colors disabled:opacity-50"
+                            >
+                              Guardar
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setEditingPT(null)}
+                              className="flex-1 px-3 py-1.5 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 text-sm transition-colors"
+                            >
+                              Cancelar
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="p-3">
+                          <div className="flex items-start justify-between gap-2 mb-2">
+                            <span className="font-medium text-sm text-gray-900 dark:text-gray-50">{pt.title}</span>
+                            <div className="flex items-center gap-1 shrink-0">
+                              {/* Toggle activo */}
+                              <button
+                                type="button"
+                                onClick={() => handleTogglePT(pt)}
+                                className={`text-xs px-2 py-0.5 rounded-full font-medium transition-colors ${
+                                  pt.active
+                                    ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-200 hover:bg-green-200 dark:hover:bg-green-800'
+                                    : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                                }`}
+                                title={pt.active ? t.userSettings.active : t.userSettings.inactive}
+                              >
+                                {pt.active ? t.userSettings.active : t.userSettings.inactive}
+                              </button>
+                              {/* Editar */}
+                              <button
+                                type="button"
+                                onClick={() => setEditingPT({ ...pt })}
+                                className="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                                title="Editar"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                              </button>
+                              {/* Eliminar */}
+                              <button
+                                type="button"
+                                onClick={() => handleDeletePT(pt)}
+                                className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                                title="Eliminar"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                              </button>
+                            </div>
+                          </div>
+                          <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 whitespace-pre-wrap">{pt.content}</p>
+                          <p className="text-xs text-gray-400 dark:text-gray-600 mt-1">
+                            {new Date(pt.updated_at).toLocaleDateString('es-CL')}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {error && (
+                <div className="p-3 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-900 rounded-md">
+                  <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
+                </div>
+              )}
+            </div>
           )}
 
           {/* --- Tab: Sistema --- */}

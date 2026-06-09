@@ -108,3 +108,74 @@ def get_clinical_note(
             detail="Clinical note not found"
         )
     return note
+
+
+@router.put("/{episode_id}/notes/{note_id}", response_model=schemas.ClinicalNoteWithAuthor)
+def update_clinical_note(
+    episode_id: int,
+    note_id: int,
+    note_update: schemas.ClinicalNoteCreate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_active_user)
+):
+    note = db.query(models.ClinicalNote).filter(
+        models.ClinicalNote.id == note_id,
+        models.ClinicalNote.episode_id == episode_id
+    ).first()
+
+    if not note:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Clinical note not found")
+
+    if note.author_user_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only the author can edit this note")
+
+    if note.synced_flag:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Cannot edit a synced note")
+
+    note.note_text = note_update.note_text
+    db.commit()
+    db.refresh(note)
+
+    return {
+        "id": note.id,
+        "episode_id": note.episode_id,
+        "author_user_id": note.author_user_id,
+        "author_username": current_user.username,
+        "author_nombre": note.author_nombre or current_user.nombre,
+        "note_text": note.note_text,
+        "created_at": note.created_at,
+        "synced_flag": note.synced_flag
+    }
+
+
+@router.delete("/{episode_id}/notes/{note_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_clinical_note(
+    episode_id: int,
+    note_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_active_user)
+):
+    note = db.query(models.ClinicalNote).filter(
+        models.ClinicalNote.id == note_id,
+        models.ClinicalNote.episode_id == episode_id
+    ).first()
+
+    if not note:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Clinical note not found")
+
+    if note.author_user_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only the author can delete this note")
+
+    if note.synced_flag:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Cannot delete a synced note")
+
+    # Cancel related outbox event if still pending
+    db.query(models.OutboxEvent).filter(
+        models.OutboxEvent.event_type == "clinical_note_created",
+        models.OutboxEvent.correlation_id == str(note_id),
+        models.OutboxEvent.status == "pending"
+    ).delete()
+
+    db.delete(note)
+    db.commit()
+

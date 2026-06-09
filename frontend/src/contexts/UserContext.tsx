@@ -28,7 +28,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       }
 
       const centralHealth = await api.getCentralHealth();
-      setIsReadOnlyMode(centralHealth.status === 'online');
+      setIsReadOnlyMode(centralHealth.status === 'online' || centralHealth.status === 'warning');
     } catch (error) {
       setIsReadOnlyMode(false);
     }

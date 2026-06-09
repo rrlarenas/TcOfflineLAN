@@ -6,6 +6,7 @@ import { UserSettingsModal } from './UserSettingsModal';
 import { useUser } from '../contexts/UserContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import iscLogo from '../assets/iscLogo-removebg-preview.png';
 
 export function Header() {
   const navigate = useNavigate();
@@ -45,7 +46,7 @@ export function Header() {
       return (
         <span className="badge-warning" title={t.header.sslWarningTooltip}>
           <span className="w-2 h-2 bg-yellow-500 rounded-full mr-1.5"></span>
-          {t.header.sslWarningShort}
+          ONLINE
         </span>
       );
     }
@@ -63,6 +64,7 @@ export function Header() {
         <div className="w-full px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
+              <img src={iscLogo} alt="ISC" className="h-8 w-auto" />
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">TrakCare Offline</h1>
               {connectionBadge()}
             </div>

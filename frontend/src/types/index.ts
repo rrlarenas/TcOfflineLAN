@@ -24,6 +24,28 @@ export interface UserUpdateRequest {
   filtros?: string;
 }
 
+export interface PredefinedText {
+  id: number;
+  user_id: number;
+  title: string;
+  content: string;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PredefinedTextCreate {
+  title: string;
+  content: string;
+  active?: boolean;
+}
+
+export interface PredefinedTextUpdate {
+  title?: string;
+  content?: string;
+  active?: boolean;
+}
+
 export interface UserCreateRequest {
   username: string;
   password: string;

@@ -1,16 +1,16 @@
-import { useState, useEffect, FormEvent } from 'react';
+import { useState, useEffect, FormEvent, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { PatientHistorySidebar } from '../components/PatientHistorySidebar';
 import { api } from '../lib/api';
 import { useUser } from '../contexts/UserContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import type { EpisodeDetail, ClinicalNote } from '../types';
+import type { EpisodeDetail, ClinicalNote, PredefinedText } from '../types';
 
 export function ClinicalNote() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { isReadOnlyMode } = useUser();
+  const { isReadOnlyMode, user: currentUser } = useUser();
   const { t, language } = useLanguage();
   const [episode, setEpisode] = useState<EpisodeDetail | null>(null);
   const [notes, setNotes] = useState<ClinicalNote[]>([]);
@@ -19,6 +19,20 @@ export function ClinicalNote() {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+
+  // Predefined texts
+  const [predefinedTexts, setPredefinedTexts] = useState<PredefinedText[]>([]);
+
+  // Edit/delete note state
+  const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
+  const [editingText, setEditingText] = useState('');
+  const [isEditSaving, setIsEditSaving] = useState(false);
+  const [deletingNoteId, setDeletingNoteId] = useState<number | null>(null);
+
+  const activePredefinedTexts = useMemo(
+    () => predefinedTexts.filter(pt => pt.active),
+    [predefinedTexts]
+  );
 
   const loadNotes = async () => {
     if (!id) return;
@@ -34,29 +48,28 @@ export function ClinicalNote() {
   useEffect(() => {
     const checkForUpdates = async () => {
       if (!id) return;
-
       const hasPendingNotes = notes.some(note => !note.synced_flag);
-
       if (hasPendingNotes) {
         await loadNotes();
       }
     };
 
     const interval = setInterval(checkForUpdates, 5000);
-
     return () => clearInterval(interval);
   }, [id, notes]);
 
   useEffect(() => {
     const loadData = async () => {
       if (!id) return;
-
       try {
         const episodeId = parseInt(id);
         const [episodeData, notesData] = await Promise.all([
           api.getEpisode(episodeId),
           api.getClinicalNotes(episodeId)
         ]);
+
+        // Load predefined texts in parallel (silently)
+        api.listPredefinedTexts().then(setPredefinedTexts).catch(() => {});
 
         if (!episodeData.paciente && episodeData.data?.Paciente) {
           episodeData.paciente = episodeData.data.Paciente;
@@ -92,27 +105,48 @@ export function ClinicalNote() {
     setError('');
 
     try {
-      await api.createClinicalNote(parseInt(id), {
-        note_text: noteText,
-      });
-
+      await api.createClinicalNote(parseInt(id), { note_text: noteText });
       setSuccessMessage(t.clinicalNote.saveSuccess);
       setNoteText('');
-
       await loadNotes();
-
-      setTimeout(() => {
-        setSuccessMessage('');
-      }, 3000);
-
-      const textarea = document.querySelector('textarea');
-      if (textarea) {
-        textarea.focus();
-      }
+      setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err) {
       setError(err instanceof Error ? err.message : t.clinicalNote.saveError);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleEditStart = (note: ClinicalNote) => {
+    setEditingNoteId(note.id);
+    setEditingText(note.note_text);
+  };
+
+  const handleEditSave = async (noteId: number) => {
+    if (!id || !editingText.trim()) return;
+    setIsEditSaving(true);
+    try {
+      await api.updateClinicalNote(parseInt(id), noteId, { note_text: editingText });
+      setEditingNoteId(null);
+      setEditingText('');
+      await loadNotes();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.clinicalNote.saveError);
+    } finally {
+      setIsEditSaving(false);
+    }
+  };
+
+  const handleDelete = async (noteId: number) => {
+    if (!id) return;
+    setDeletingNoteId(noteId);
+    try {
+      await api.deleteClinicalNote(parseInt(id), noteId);
+      await loadNotes();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.clinicalNote.saveError);
+    } finally {
+      setDeletingNoteId(null);
     }
   };
 
@@ -158,10 +192,7 @@ export function ClinicalNote() {
           <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-900 text-red-800 dark:text-red-200 rounded-lg p-4">
             {t.clinicalNote.episodeNotFound}
           </div>
-          <button
-            onClick={() => navigate('/episodes')}
-            className="mt-4 btn-primary"
-          >
+          <button onClick={() => navigate('/episodes')} className="mt-4 btn-primary">
             {t.clinicalNote.backToEpisodes}
           </button>
         </div>
@@ -174,194 +205,287 @@ export function ClinicalNote() {
       <Header />
       <PatientHistorySidebar episodeData={episode.data} />
 
-      <main className="max-w-4xl mx-auto px-4 py-6 sm:px-6 lg:px-8 mr-96">
-        <div className="mb-6">
-          <button
-            onClick={() => navigate('/episodes')}
-            className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-2 mb-4"
-          >
-            ← {t.clinicalNote.backToEpisodes}
-          </button>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-50">{t.clinicalNote.clinicalRecord}</h2>
-        </div>
-
-        <div className="card mb-6 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-900">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t.clinicalNote.patient}</h3>
-              <p className="text-lg font-semibold text-gray-900 dark:text-gray-50">
+      {/* Sticky sub-header: volver + datos del paciente */}
+      <div className="sticky top-[73px] z-40 bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 shadow-sm will-change-transform">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 ml-96">
+          <div className="flex items-center gap-4 py-2">
+            <button
+              onClick={() => navigate('/episodes')}
+              className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1 text-sm font-medium shrink-0"
+            >
+              ← {t.clinicalNote.backToEpisodes}
+            </button>
+            <div className="flex items-center gap-3 overflow-hidden">
+              <span className="text-sm font-semibold text-gray-900 dark:text-gray-50 truncate">
                 {episode.paciente || 'Sin nombre'}
-              </p>
+              </span>
               {episode.run && (
-                <p className="text-sm text-gray-600 dark:text-gray-400">{t.episodes.run}: {episode.run}</p>
+                <span className="text-xs text-gray-500 dark:text-gray-400 shrink-0">
+                  {t.episodes.run}: {episode.run}
+                </span>
               )}
-              {episode.mrn && (
-                <p className="text-sm text-gray-600 dark:text-gray-400">{t.episodes.mrn}: {episode.mrn}</p>
+              {episode.sexo && (
+                <span className="text-xs text-gray-500 dark:text-gray-400 shrink-0">{episode.sexo}</span>
               )}
-            </div>
-
-            <div>
-              <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t.clinicalNote.sex}</h3>
-              <p className="text-lg font-semibold text-gray-900 dark:text-gray-50">
-                {episode.sexo || t.clinicalNote.unknown}
-              </p>
-            </div>
-
-            {episode.fecha_nacimiento && (
-              <div>
-                <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t.clinicalNote.birthDate}</h3>
-                <p className="text-lg font-semibold text-gray-900 dark:text-gray-50">
-                  {formatDate(episode.fecha_nacimiento)}
-                </p>
-              </div>
-            )}
-
-            {episode.fecha_atencion && (
-              <div>
-                <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t.clinicalNote.attentionDate}</h3>
-                <p className="text-lg font-semibold text-gray-900 dark:text-gray-50">
-                  {formatDateTime(episode.fecha_atencion)}
-                </p>
-              </div>
-            )}
-
-            {episode.tipo && (
-              <div>
-                <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t.clinicalNote.episodeType}</h3>
-                <p className="text-lg font-semibold text-gray-900 dark:text-gray-50">
+              {episode.fecha_nacimiento && (
+                <span className="text-xs text-gray-500 dark:text-gray-400 shrink-0">{formatDate(episode.fecha_nacimiento)}</span>
+              )}
+              {episode.tipo && (
+                <span className="text-xs px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 rounded-full shrink-0">
                   {episode.tipo}
-                </p>
-              </div>
-            )}
-
-            {episode.profesional && (
-              <div>
-                <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t.clinicalNote.professional}</h3>
-                <p className="text-lg font-semibold text-gray-900 dark:text-gray-50">
-                  {episode.profesional}
-                </p>
-              </div>
-            )}
-
-            {episode.motivo_consulta && (
-              <div className="md:col-span-2">
-                <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t.clinicalNote.consultReason}</h3>
-                <p className="text-lg font-semibold text-gray-900 dark:text-gray-50">
-                  {episode.motivo_consulta}
-                </p>
-              </div>
-            )}
-
-            {(episode.habitacion || episode.cama) && (
-              <div>
-                <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t.clinicalNote.location}</h3>
-                <p className="text-lg font-semibold text-gray-900 dark:text-gray-50">
-                  {episode.habitacion && episode.cama
-                    ? `${t.clinicalNote.room} ${episode.habitacion} - ${t.clinicalNote.bed} ${episode.cama}`
-                    : episode.habitacion || episode.cama}
-                </p>
-              </div>
-            )}
+                </span>
+              )}
+            </div>
           </div>
         </div>
+      </div>
 
-        {isReadOnlyMode && (
-          <div className="mb-6 bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-900 text-amber-800 dark:text-amber-200 rounded-lg p-4">
-            <div className="flex items-start gap-3">
-              <svg className="w-5 h-5 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-              </svg>
+      {/* Contenido principal */}
+      <main>
+        <div className="max-w-4xl mx-auto px-4 py-6 sm:px-6 lg:px-8 ml-96">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-50 mb-6">{t.clinicalNote.clinicalRecord}</h2>
+
+          {/* Tarjeta de datos completos del paciente */}
+          <div className="card mb-6 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-900">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <h3 className="font-semibold mb-1">{t.readOnlyMode.title}</h3>
-                <p className="text-sm">{t.readOnlyMode.notesBanner}</p>
+                <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t.clinicalNote.patient}</h3>
+                <p className="text-lg font-semibold text-gray-900 dark:text-gray-50">
+                  {episode.paciente || 'Sin nombre'}
+                </p>
+                {episode.run && (
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{t.episodes.run}: {episode.run}</p>
+                )}
+                {episode.mrn && (
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{t.episodes.mrn}: {episode.mrn}</p>
+                )}
               </div>
+
+              <div>
+                <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t.clinicalNote.sex}</h3>
+                <p className="text-lg font-semibold text-gray-900 dark:text-gray-50">
+                  {episode.sexo || t.clinicalNote.unknown}
+                </p>
+              </div>
+
+              {episode.fecha_nacimiento && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t.clinicalNote.birthDate}</h3>
+                  <p className="text-lg font-semibold text-gray-900 dark:text-gray-50">
+                    {formatDate(episode.fecha_nacimiento)}
+                  </p>
+                </div>
+              )}
+
+              {episode.fecha_atencion && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t.clinicalNote.attentionDate}</h3>
+                  <p className="text-lg font-semibold text-gray-900 dark:text-gray-50">
+                    {formatDateTime(episode.fecha_atencion)}
+                  </p>
+                </div>
+              )}
+
+              {episode.tipo && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t.clinicalNote.episodeType}</h3>
+                  <p className="text-lg font-semibold text-gray-900 dark:text-gray-50">{episode.tipo}</p>
+                </div>
+              )}
+
+              {episode.profesional && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t.clinicalNote.professional}</h3>
+                  <p className="text-lg font-semibold text-gray-900 dark:text-gray-50">{episode.profesional}</p>
+                </div>
+              )}
+
+              {episode.motivo_consulta && (
+                <div className="md:col-span-2">
+                  <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t.clinicalNote.consultReason}</h3>
+                  <p className="text-lg font-semibold text-gray-900 dark:text-gray-50">{episode.motivo_consulta}</p>
+                </div>
+              )}
+
+              {(episode.habitacion || episode.cama) && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t.clinicalNote.location}</h3>
+                  <p className="text-lg font-semibold text-gray-900 dark:text-gray-50">
+                    {episode.habitacion && episode.cama
+                      ? `${t.clinicalNote.room} ${episode.habitacion} - ${t.clinicalNote.bed} ${episode.cama}`
+                      : episode.habitacion || episode.cama}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
-        )}
 
-        <form onSubmit={handleSubmit} className="card mb-6">
-          <div className="mb-4">
-            <label className="label text-base">
-              {t.clinicalNote.newNote}
-            </label>
-            <textarea
-              value={noteText}
-              onChange={(e) => setNoteText(e.target.value)}
-              className="input-field min-h-[300px] font-mono text-sm disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-              placeholder={isReadOnlyMode === false ? t.clinicalNote.notePlaceholder : t.readOnlyMode.textareaPlaceholder}
-              required
-              disabled={isReadOnlyMode !== false}
-            />
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-              {noteText.length} {t.clinicalNote.characters}
-            </p>
-          </div>
+          {/* Banner modo solo lectura */}
+          {isReadOnlyMode && (
+            <div className="mb-6 bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-900 text-amber-800 dark:text-amber-200 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <svg className="w-5 h-5 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+                <div>
+                  <h3 className="font-semibold mb-1">{t.readOnlyMode.title}</h3>
+                  <p className="text-sm">{t.readOnlyMode.notesBanner}</p>
+                </div>
+              </div>
+            </div>
+          )}
 
-          {error && (
+          {/* Formulario de nueva nota — oculto en modo solo lectura */}
+          {!isReadOnlyMode && (
+            <form onSubmit={handleSubmit} className="card mb-6">
+              <div className="mb-4">
+                <label className="label text-base">{t.clinicalNote.newNote}</label>
+                {activePredefinedTexts.length > 0 && (
+                  <select
+                    defaultValue=""
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        setNoteText(prev => prev ? `${prev}\n${e.target.value}` : e.target.value);
+                        e.target.value = '';
+                      }
+                    }}
+                    className="mb-2 w-full px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">{t.clinicalNote.predefinedTextsPlaceholder}</option>
+                    {activePredefinedTexts.map(pt => (
+                      <option key={pt.id} value={pt.content}>{pt.title}</option>
+                    ))}
+                  </select>
+                )}
+                <textarea
+                  value={noteText}
+                  onChange={(e) => setNoteText(e.target.value)}
+                  className="input-field min-h-[300px] font-mono text-sm"
+                  placeholder={t.clinicalNote.notePlaceholder}
+                  required
+                />
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                  {noteText.length} {t.clinicalNote.characters}
+                </p>
+              </div>
+
+              {error && (
+                <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-900 text-red-800 dark:text-red-200 rounded-lg p-3 text-sm mb-4">
+                  {error}
+                </div>
+              )}
+
+              {successMessage && (
+                <div className="bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-900 text-green-800 dark:text-green-200 rounded-lg p-3 text-sm mb-4">
+                  {successMessage}
+                </div>
+              )}
+
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  className="btn-primary disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  disabled={isSaving || !noteText.trim()}
+                >
+                  {isSaving ? t.clinicalNote.saving : t.clinicalNote.saveNote}
+                </button>
+              </div>
+            </form>
+          )}
+
+          {error && isReadOnlyMode && (
             <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-900 text-red-800 dark:text-red-200 rounded-lg p-3 text-sm mb-4">
               {error}
             </div>
           )}
 
-          {successMessage && (
-            <div className="bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-900 text-green-800 dark:text-green-200 rounded-lg p-3 text-sm mb-4">
-              {successMessage}
+          {/* Lista de notas */}
+          {notes.length > 0 && (
+            <div className="card">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-50 mb-4">{t.clinicalNote.previousNotes}</h3>
+              <div className="space-y-4">
+                {notes.map((note) => {
+                  const isOwn = currentUser && note.author_user_id === currentUser.id;
+                  const canEdit = isOwn && !note.synced_flag;
+                  const isEditing = editingNoteId === note.id;
+                  const isDeleting = deletingNoteId === note.id;
+
+                  return (
+                    <div key={note.id} className="border-l-4 border-blue-500 bg-gray-50 dark:bg-gray-900 p-4 rounded-r-lg">
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-1">
+                            <span className="font-medium">{note.author_username}</span>
+                            <span>•</span>
+                            <span>{formatDateTime(note.created_at)}</span>
+                            <span>•</span>
+                            <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                              note.synced_flag
+                                ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
+                                : 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200'
+                            }`}>
+                              {note.synced_flag ? t.clinicalNote.sent : t.clinicalNote.pending}
+                            </span>
+                          </div>
+                        </div>
+                        {canEdit && !isEditing && (
+                          <div className="flex items-center gap-2 ml-2">
+                            <button
+                              onClick={() => handleEditStart(note)}
+                              className="text-xs px-2 py-1 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950 rounded transition-colors"
+                            >
+                              {t.common.edit}
+                            </button>
+                            <button
+                              onClick={() => handleDelete(note.id)}
+                              disabled={isDeleting}
+                              className="text-xs px-2 py-1 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 rounded transition-colors disabled:opacity-50"
+                            >
+                              {isDeleting ? '...' : t.common.delete}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      {isEditing ? (
+                        <div className="space-y-2">
+                          <textarea
+                            value={editingText}
+                            onChange={(e) => setEditingText(e.target.value)}
+                            className="input-field min-h-[150px] font-mono text-sm w-full"
+                          />
+                          <div className="flex gap-2 justify-end">
+                            <button
+                              onClick={() => { setEditingNoteId(null); setEditingText(''); }}
+                              className="text-sm px-3 py-1.5 btn-secondary"
+                              disabled={isEditSaving}
+                            >
+                              {t.common.cancel}
+                            </button>
+                            <button
+                              onClick={() => handleEditSave(note.id)}
+                              className="text-sm px-3 py-1.5 btn-primary disabled:opacity-50"
+                              disabled={isEditSaving || !editingText.trim()}
+                            >
+                              {isEditSaving ? t.clinicalNote.saving : t.common.save}
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap font-mono">
+                          {note.note_text}
+                          {note.author_nombre && (
+                            <span className="text-gray-600 dark:text-gray-400">{'\n\n'}{note.author_nombre}</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
-
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={() => navigate('/episodes')}
-              className="flex-1 btn-secondary"
-            >
-              {t.clinicalNote.backToEpisodes}
-            </button>
-            <button
-              type="submit"
-              className="flex-1 btn-primary disabled:bg-gray-400 disabled:cursor-not-allowed"
-              disabled={isSaving || !noteText.trim() || isReadOnlyMode !== false}
-              title={isReadOnlyMode === true ? t.readOnlyMode.buttonTooltip : ''}
-            >
-              {isSaving ? t.clinicalNote.saving : t.clinicalNote.saveNote}
-            </button>
-          </div>
-        </form>
-
-        {notes.length > 0 && (
-          <div className="card">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-50 mb-4">{t.clinicalNote.previousNotes}</h3>
-            <div className="space-y-4">
-              {notes.map((note) => (
-                <div key={note.id} className="border-l-4 border-blue-500 bg-gray-50 dark:bg-gray-900 p-4 rounded-r-lg">
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-1">
-                        <span className="font-medium">{note.author_username}</span>
-                        <span>•</span>
-                        <span>{formatDateTime(note.created_at)}</span>
-                        <span>•</span>
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                          note.synced_flag
-                            ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
-                            : 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200'
-                        }`}>
-                          {note.synced_flag ? t.clinicalNote.sent : t.clinicalNote.pending}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap font-mono">
-                    {note.note_text}
-                    {note.author_nombre && (
-                      <span className="text-gray-600 dark:text-gray-400">{'\n\n'}{note.author_nombre}</span>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        </div>
       </main>
     </div>
   );

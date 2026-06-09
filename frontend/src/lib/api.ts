@@ -14,6 +14,9 @@ import type {
   SystemSettings,
   SystemConfig,
   SystemConfigUpdate,
+  PredefinedText,
+  PredefinedTextCreate,
+  PredefinedTextUpdate,
 } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
@@ -236,5 +239,44 @@ export const api = {
       body: JSON.stringify(data),
     });
     return response.json();
+  },
+
+  async updateClinicalNote(episodeId: number, noteId: number, note: ClinicalNoteCreateRequest): Promise<ClinicalNote> {
+    const response = await fetchWithAuth(`/episodes/${episodeId}/notes/${noteId}`, {
+      method: 'PUT',
+      body: JSON.stringify(note),
+    });
+    return response.json();
+  },
+
+  async deleteClinicalNote(episodeId: number, noteId: number): Promise<void> {
+    await fetchWithAuth(`/episodes/${episodeId}/notes/${noteId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  async listPredefinedTexts(): Promise<PredefinedText[]> {
+    const response = await fetchWithAuth('/predefined-texts');
+    return response.json();
+  },
+
+  async createPredefinedText(data: PredefinedTextCreate): Promise<PredefinedText> {
+    const response = await fetchWithAuth('/predefined-texts', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    return response.json();
+  },
+
+  async updatePredefinedText(id: number, data: PredefinedTextUpdate): Promise<PredefinedText> {
+    const response = await fetchWithAuth(`/predefined-texts/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+    return response.json();
+  },
+
+  async deletePredefinedText(id: number): Promise<void> {
+    await fetchWithAuth(`/predefined-texts/${id}`, { method: 'DELETE' });
   },
 };

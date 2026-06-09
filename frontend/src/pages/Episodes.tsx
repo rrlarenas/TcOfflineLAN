@@ -225,15 +225,18 @@ export function Episodes() {
                         ? 'bg-yellow-500'
                         : 'bg-red-500'
                   }`}></div>
-                  <span className={`font-medium ${
-                    syncStats.connection.status === 'warning'
-                      ? 'text-yellow-700 dark:text-yellow-400'
-                      : 'text-gray-900 dark:text-gray-100'
-                  }`}>
+                  <span
+                    className={`font-medium ${
+                      syncStats.connection.status === 'warning'
+                        ? 'text-yellow-700 dark:text-yellow-400'
+                        : 'text-gray-900 dark:text-gray-100'
+                    }`}
+                    title={syncStats.connection.status === 'warning' ? t.header.sslWarningTooltip : undefined}
+                  >
                     {syncStats.connection.status === 'online'
                       ? t.episodes.connected
                       : syncStats.connection.status === 'warning'
-                        ? t.episodes.sslWarning
+                        ? 'ONLINE'
                         : t.episodes.disconnected}
                   </span>
                 </div>

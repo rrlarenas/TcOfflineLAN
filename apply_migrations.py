@@ -48,6 +48,28 @@ except sqlite3.OperationalError as e:
         print(f"  ✗ Error adding 'nombre' column: {e}")
 
 conn.commit()
+
+# Migration 014: Create predefined_texts table
+try:
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS predefined_texts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL REFERENCES users(id),
+            title VARCHAR(200) NOT NULL,
+            content TEXT NOT NULL,
+            active BOOLEAN NOT NULL DEFAULT 1,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    cursor.execute(
+        "CREATE INDEX IF NOT EXISTS ix_predefined_texts_user_id ON predefined_texts(user_id)"
+    )
+    print("  ✓ Created 'predefined_texts' table")
+except Exception as e:
+    print(f"  - 'predefined_texts' table: {e}")
+
+conn.commit()
 conn.close()
 
 print("\nMigrations applied successfully!")
