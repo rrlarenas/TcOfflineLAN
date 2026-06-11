@@ -1,7 +1,7 @@
 {
   "name": "trakcare-offline-ui",
   "private": true,
-  "version": "2.5.0-rc10-stable",
+  "version": "2.9.0-rc2",
   "description": "TrakCare Offline - Sistema de gestión de episodios médicos offline",
   "author": "TrakCare Team",
   "type": "module",

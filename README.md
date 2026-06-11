@@ -1,4 +1,4 @@
-# TrakCare Offline Local v2.5.0-rc10-stable
+# TrakCare Offline Local v2.9.0-rc2
 
 Sistema offline para gestión de episodios clínicos con sincronización bidireccional con servidor central.
 
@@ -320,6 +320,17 @@ project/
 
 ## Modelo de Datos
 
+### Tabla `predefined_texts`
+
+Plantillas de notas clínicas por usuario:
+
+- `id`: ID autoincremental
+- `user_id`: FK a users (propietario)
+- `title`: Título corto descriptivo
+- `content`: Texto completo de la plantilla
+- `active`: Si está activa y visible en el selector
+- `created_at`, `updated_at`: Marcas de tiempo
+
 ### Tabla `episodes`
 
 Almacena episodios completos con JSON:
@@ -384,6 +395,14 @@ Eventos para sincronización upstream:
 ### Notas Clínicas
 - `POST /episodes/{id}/notes` - Crea nota clínica
 - `GET /episodes/{id}/notes` - Lista notas del episodio
+- `PUT /episodes/{id}/notes/{note_id}` - Edita nota (solo autor, solo si no está sincronizada)
+- `DELETE /episodes/{id}/notes/{note_id}` - Elimina nota (solo autor, solo si no está sincronizada)
+
+### Textos Predefinidos
+- `GET /predefined-texts` - Lista plantillas del usuario actual
+- `POST /predefined-texts` - Crea nueva plantilla
+- `PUT /predefined-texts/{id}` - Actualiza plantilla
+- `DELETE /predefined-texts/{id}` - Elimina plantilla
 
 ### Sincronización
 - `GET /sync/status` - Estado detallado de sincronización
@@ -474,12 +493,16 @@ alembic history
 10. `010_make_run_optional.py` - Documenta opcionalidad del campo RUN
 11. `011_add_author_user_id_to_outbox_events.py` - Agrega author_user_id (FK a users) en outbox_events para identificar al profesional en mensajes HL7
 12. `012_add_central_sync_hash_to_users.py` - Agrega central_sync_hash a users para detección eficiente de cambios en sync de usuarios
+13. `013_add_system_config_table.py` - Tabla system_config para parámetros de configuración runtime
+14. `014_add_predefined_texts_table.py` - Tabla predefined_texts para plantillas de notas clínicas por usuario
 
 **Migraciones `backend_lan/` (PostgreSQL):**
 1. `000_base.py` - Revisión base vacía
 2. `001_initial_postgres_schema.py` - Schema completo con timestamps timezone-aware
 3. `002_fix_data_json_to_text.py` - Corrección tipo columna data_json
 4. `003_add_central_sync_hash_to_users.py` - Agrega central_sync_hash a users
+5. `004_add_system_config_table.py` - Tabla system_config para parámetros de configuración runtime
+6. `005_add_predefined_texts_table.py` - Tabla predefined_texts para plantillas de notas clínicas por usuario
 
 ### Variables de Entorno
 

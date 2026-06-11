@@ -1,6 +1,6 @@
 {
   "name": "trakcare-offline-local",
-  "version": "2.5.0-rc10-stable",
+  "version": "2.9.0-rc2",
   "private": true,
   "scripts": {
     "test": "echo \"Python FastAPI project - use pytest for testing\"",

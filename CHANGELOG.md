@@ -1,5 +1,73 @@
 # Changelog
 
+## [2.9.0-rc2] - 2026-06-09
+
+### Agregado
+
+#### Textos Predefinidos en Notas Clínicas
+
+- Nueva tabla `predefined_texts` para almacenar plantillas de notas clínicas por usuario.
+- Endpoint CRUD completo: `GET/POST/PUT/DELETE /predefined-texts`.
+- El selector de textos predefinidos en la pantalla de Nota Clínica permite insertar una plantilla con un clic, reemplazando el contenido actual del área de texto.
+- La gestión de plantillas (crear, editar, activar/desactivar, eliminar) está disponible en la pestaña "Textos Predefinidos" del modal de configuración de usuario.
+- Cada usuario administra sus propias plantillas (aislamiento por `user_id`).
+- **Migración `app/` (SQLite):** `014_add_predefined_texts_table.py`
+- **Migración `backend_lan/` (PostgreSQL):** `005_add_predefined_texts_table.py`
+
+#### Edición y Eliminación de Notas Clínicas
+
+- Nuevo endpoint `PUT /episodes/{episode_id}/notes/{note_id}` — permite editar el texto de una nota clínica.
+- Nuevo endpoint `DELETE /episodes/{episode_id}/notes/{note_id}` — permite eliminar una nota clínica.
+- **Restricciones aplicadas en ambos backends:**
+  - Solo el autor de la nota puede editarla o eliminarla (HTTP 403 si intenta otro usuario).
+  - Las notas ya sincronizadas con el servidor central (`synced_flag=true`) no pueden modificarse ni eliminarse (HTTP 409 Conflict).
+  - Al eliminar una nota, se cancela el evento outbox pendiente asociado si aún no fue enviado.
+- El frontend muestra botones de edición y eliminación en cada nota, activados solo cuando las condiciones lo permiten.
+
+### Corregido
+
+#### Zona Horaria en Fechas y Horas
+
+- **Problema**: Las horas de registro de notas clínicas y otras fechas del sistema se mostraban en UTC en lugar de la zona horaria local del usuario.
+- **Causa**: El servidor devuelve strings ISO sin sufijo de zona (`"2024-01-15T14:30:00"`). Sin el sufijo `Z`, distintos navegadores interpretaban el valor como hora local, produciendo conversiones incorrectas en instalaciones fuera de UTC+0.
+- **Solución**: Nueva función exportada `parseServerDate(str)` en `frontend/src/lib/timeAgo.ts`. Añade `Z` al string cuando no tiene sufijo de zona, forzando interpretación UTC. Todos los formateos de fecha usan esta función, por lo que el navegador convierte a hora local correctamente.
+- **Archivos corregidos**: `ClinicalNote.tsx`, `EpisodesTable.tsx`, `PatientHistorySidebar.tsx`, `UserSettingsModal.tsx`, `timeAgo.ts`
+
+#### Paridad entre backends — Notas Clínicas
+
+- `backend_lan/app/routers/notes.py` carecía de los endpoints `PUT` y `DELETE` para notas clínicas. Se agregaron con la misma lógica de validación que el backend `app/`.
+
+### Archivos Modificados
+
+#### Backend (`app/`)
+- `app/models.py`: Modelo `PredefinedText` + relación en `User`
+- `app/schemas.py`: Schemas `PredefinedText`, `PredefinedTextCreate`, `PredefinedTextUpdate`
+- `app/routers/predefined_texts.py`: Nuevo router CRUD
+- `app/routers/notes.py`: Endpoints `PUT` y `DELETE` de notas (ya existían; se documentan)
+- `app/main.py`: Registro de `predefined_texts.router`
+- `alembic/versions/014_add_predefined_texts_table.py`: Nueva migración SQLite
+
+#### Backend LAN (`backend_lan/`)
+- `backend_lan/app/models.py`: Modelo `PredefinedText` + relación en `User`
+- `backend_lan/app/schemas.py`: Schemas `PredefinedText`, `PredefinedTextCreate`, `PredefinedTextUpdate`
+- `backend_lan/app/routers/predefined_texts.py`: Nuevo router CRUD
+- `backend_lan/app/routers/notes.py`: Endpoints `PUT` y `DELETE` de notas (nuevos)
+- `backend_lan/app/main.py`: Registro de `predefined_texts.router`
+- `backend_lan/alembic/versions/005_add_predefined_texts_table.py`: Nueva migración PostgreSQL
+
+#### Frontend
+- `frontend/src/lib/timeAgo.ts`: Función exportada `parseServerDate()`
+- `frontend/src/pages/ClinicalNote.tsx`: Uso de `parseServerDate`, selector de textos predefinidos, botones editar/eliminar nota
+- `frontend/src/components/EpisodesTable.tsx`: Uso de `parseServerDate`
+- `frontend/src/components/PatientHistorySidebar.tsx`: Uso de `parseServerDate`
+- `frontend/src/components/UserSettingsModal.tsx`: Pestaña "Textos Predefinidos", uso de `parseServerDate`
+- `frontend/src/lib/api.ts`: Funciones `getPredefinedTexts`, `createPredefinedText`, `updatePredefinedText`, `deletePredefinedText`, `updateClinicalNote`, `deleteClinicalNote`
+- `frontend/src/types/index.ts`: Interface `PredefinedText`
+- `frontend/src/config/lang_es.ts`: Sección `predefinedTexts`
+- `frontend/src/config/lang_en.ts`: Sección `predefinedTexts`
+
+---
+
 ## [2.5.0-rc10-stable] - 2026-05-30
 
 ### Corregido

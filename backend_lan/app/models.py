@@ -46,7 +46,7 @@ class Episode(Base):
     run: Mapped[str] = mapped_column(String(20), nullable=True)
     paciente: Mapped[str] = mapped_column(String(200), nullable=True)
     fecha_nacimiento: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
-    sexo: Mapped[str] = mapped_column(String(10), nullable=True)
+    sexo: Mapped[str] = mapped_column(String(20), nullable=True)
 
     tipo: Mapped[str] = mapped_column(String(50), nullable=True)
     fecha_atencion: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True, index=True)

@@ -1,6 +1,6 @@
 # DOCUMENTACIÓN COMPLETA DE FUNCIONALIDADES
 
-Sistema TrakCare Offline - Versión 2.5.0-rc10-stable
+Sistema TrakCare Offline - Versión 2.9.0-rc2
 
 ---
 
@@ -24,18 +24,19 @@ Ambos backends exponen la misma API REST y tienen las mismas funcionalidades. La
 1. [Backend - Autenticación y Usuarios](#backend---autenticación-y-usuarios)
 2. [Backend - Episodios Clínicos](#backend---episodios-clínicos)
 3. [Backend - Notas Clínicas](#backend---notas-clínicas)
-4. [Backend - Salud y Estado del Sistema](#backend---salud-y-estado-del-sistema)
-5. [Backend - Sincronización](#backend---sincronización)
-6. [Backend - Tareas en Segundo Plano](#backend---tareas-en-segundo-plano)
-7. [Backend - Servicios Auxiliares](#backend---servicios-auxiliares)
-8. [Backend LAN - Diferencias y características específicas](#backend-lan---diferencias-y-características-específicas)
-9. [Frontend - Páginas Principales](#frontend---páginas-principales)
-10. [Frontend - Componentes](#frontend---componentes)
-11. [Frontend - Contextos Globales](#frontend---contextos-globales)
-12. [Frontend - Hooks Personalizados](#frontend---hooks-personalizados)
-13. [Frontend - Servicios y Utilidades](#frontend---servicios-y-utilidades)
-14. [Frontend - Configuración](#frontend---configuración)
-15. [Características Transversales](#características-transversales)
+4. [Backend - Textos Predefinidos](#backend---textos-predefinidos)
+5. [Backend - Salud y Estado del Sistema](#backend---salud-y-estado-del-sistema)
+6. [Backend - Sincronización](#backend---sincronización)
+7. [Backend - Tareas en Segundo Plano](#backend---tareas-en-segundo-plano)
+8. [Backend - Servicios Auxiliares](#backend---servicios-auxiliares)
+9. [Backend LAN - Diferencias y características específicas](#backend-lan---diferencias-y-características-específicas)
+10. [Frontend - Páginas Principales](#frontend---páginas-principales)
+11. [Frontend - Componentes](#frontend---componentes)
+12. [Frontend - Contextos Globales](#frontend---contextos-globales)
+13. [Frontend - Hooks Personalizados](#frontend---hooks-personalizados)
+14. [Frontend - Servicios y Utilidades](#frontend---servicios-y-utilidades)
+15. [Frontend - Configuración](#frontend---configuración)
+16. [Características Transversales](#características-transversales)
 
 ---
 
@@ -181,6 +182,64 @@ Ambos backends exponen la misma API REST y tienen las mismas funcionalidades. La
 - **Descripción:** Obtiene una nota clínica específica
 - **Validación:** Verifica que la nota pertenezca al episodio indicado
 - **Response:** Nota clínica completa
+
+### Editar nota clínica
+- **Endpoint:** `PUT /episodes/{episode_id}/notes/{note_id}`
+- **Archivo:** `app/routers/notes.py`
+- **Autenticación:** Basic Auth
+- **Descripción:** Actualiza el texto de una nota clínica existente
+- **Restricciones:**
+  - Solo el autor puede editar su nota (HTTP 403 en caso contrario)
+  - Las notas ya sincronizadas (`synced_flag=true`) no pueden modificarse (HTTP 409)
+- **Body:** `ClinicalNoteCreate` (note_text)
+- **Response:** Nota actualizada con datos del autor
+
+### Eliminar nota clínica
+- **Endpoint:** `DELETE /episodes/{episode_id}/notes/{note_id}`
+- **Archivo:** `app/routers/notes.py`
+- **Autenticación:** Basic Auth
+- **Descripción:** Elimina una nota clínica
+- **Restricciones:**
+  - Solo el autor puede eliminar su nota (HTTP 403 en caso contrario)
+  - Las notas ya sincronizadas no pueden eliminarse (HTTP 409)
+  - Si hay un evento outbox pendiente asociado (`clinical_note_created`, status `pending`), también se elimina
+- **Response:** HTTP 204 No Content
+
+---
+
+## BACKEND - TEXTOS PREDEFINIDOS
+
+### Listar textos predefinidos del usuario
+- **Endpoint:** `GET /predefined-texts`
+- **Archivo:** `app/routers/predefined_texts.py`
+- **Autenticación:** Basic Auth
+- **Descripción:** Retorna todas las plantillas de texto del usuario autenticado, ordenadas por fecha de creación ascendente
+- **Response:** Lista de `PredefinedText`
+
+### Crear texto predefinido
+- **Endpoint:** `POST /predefined-texts`
+- **Archivo:** `app/routers/predefined_texts.py`
+- **Autenticación:** Basic Auth
+- **Descripción:** Crea una nueva plantilla de texto para el usuario autenticado
+- **Body:** `PredefinedTextCreate` (title, content, active)
+- **Response:** `PredefinedText` creado (HTTP 201)
+
+### Actualizar texto predefinido
+- **Endpoint:** `PUT /predefined-texts/{pt_id}`
+- **Archivo:** `app/routers/predefined_texts.py`
+- **Autenticación:** Basic Auth
+- **Descripción:** Actualiza título, contenido o estado activo de una plantilla
+- **Restricciones:** Solo el propietario puede actualizar su plantilla (HTTP 404 si no pertenece al usuario)
+- **Body:** `PredefinedTextUpdate` (title, content, active — todos opcionales)
+- **Response:** `PredefinedText` actualizado
+
+### Eliminar texto predefinido
+- **Endpoint:** `DELETE /predefined-texts/{pt_id}`
+- **Archivo:** `app/routers/predefined_texts.py`
+- **Autenticación:** Basic Auth
+- **Descripción:** Elimina permanentemente una plantilla del usuario
+- **Restricciones:** Solo el propietario puede eliminar su plantilla (HTTP 404 si no pertenece al usuario)
+- **Response:** HTTP 204 No Content
 
 ---
 
@@ -517,6 +576,8 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 - `001_initial_postgres_schema.py` — Schema completo con PostgreSQL y timestamps timezone-aware
 - `002_fix_data_json_to_text.py` — Corrección de tipo de columna `data_json`
 - `003_add_central_sync_hash_to_users.py` — Agrega `central_sync_hash` para detección eficiente de cambios en sync
+- `004_add_system_config_table.py` — Tabla `system_config` para parámetros de configuración runtime
+- `005_add_predefined_texts_table.py` — Tabla `predefined_texts` para plantillas de notas clínicas por usuario
 
 ---
 
@@ -793,6 +854,11 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
   - `fetchClinicalNotes(episodeId)`: GET /episodes/:id/notes
   - `fetchClinicalNote(episodeId, noteId)`: GET /episodes/:id/notes/:noteId
   - `updateClinicalNote(episodeId, noteId, data)`: PUT /episodes/:id/notes/:noteId
+  - `deleteClinicalNote(episodeId, noteId)`: DELETE /episodes/:id/notes/:noteId
+  - `getPredefinedTexts()`: GET /predefined-texts
+  - `createPredefinedText(data)`: POST /predefined-texts
+  - `updatePredefinedText(id, data)`: PUT /predefined-texts/:id
+  - `deletePredefinedText(id)`: DELETE /predefined-texts/:id
   - `searchPatients(query)`: POST /sync/from-central con filtro
   - `getCurrentUser()`: GET /auth/me
   - `updateCurrentUser(data)`: PUT /auth/me
@@ -813,16 +879,13 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 - **Integración:** Basic Auth (username:password en base64)
 - **Storage:** localStorage
 
-### Utilidad de tiempo relativo
+### Utilidad de tiempo relativo y fechas
 - **Archivo:** `frontend/src/lib/timeAgo.ts`
-- **Descripción:** Utilidad para formateo de fechas relativas
-- **Función:** `timeAgo(dateString, language)`
-- **Funcionalidades:**
-  - Calcula tiempo transcurrido desde una fecha
-  - Formatos: segundos, minutos, horas, días, semanas, meses, años
-  - Soporte multiidioma (es/en)
-  - Manejo de fechas futuras
-  - Formato "hace X tiempo" / "X ago"
+- **Descripción:** Utilidades para formateo de fechas
+- **Funciones exportadas:**
+  - `formatTimeAgo(date, t)`: Calcula tiempo transcurrido desde una fecha en formato relativo multiidioma ("hace 5 minutos", "hace 2 días", etc.)
+  - `parseServerDate(str)`: Parsea strings ISO del servidor como UTC. Los backends retornan fechas sin sufijo de zona (`"2024-01-15T14:30:00"`); esta función añade `Z` para forzar interpretación UTC y que la conversión a hora local del navegador sea correcta.
+- **Uso de `parseServerDate`:** `ClinicalNote.tsx`, `EpisodesTable.tsx`, `PatientHistorySidebar.tsx`, `UserSettingsModal.tsx`
 
 ---
 
@@ -857,6 +920,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
   - `Episode`: Episodio clínico
   - `EpisodeDetail`: Episodio con `data` JSON parseado
   - `ClinicalNote`: Nota clínica con autor
+  - `PredefinedText`: Plantilla de nota clínica del usuario
   - `SyncStats`: Estadísticas completas de sincronización
   - `SyncStatus`: Estado básico de sincronización
 

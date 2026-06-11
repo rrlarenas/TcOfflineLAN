@@ -1,4 +1,4 @@
-# Manual de Usuario — TrakCare Offline v2.5.0-rc10-stable
+# Manual de Usuario — TrakCare Offline v2.9.0-rc2
 
 Sistema de contingencia clínica para gestión offline de episodios y notas clínicas con sincronización automática al servidor central TrakCare.
 
@@ -191,11 +191,21 @@ Si el episodio tiene notas previas, se muestran en orden cronológico (de la má
 
 1. Escriba el texto de la nota en el área de texto grande.
 2. El contador de caracteres se actualiza en tiempo real.
-3. Haga clic en **"Guardar Nota"** cuando esté listo.
-4. Aparecerá un mensaje verde de confirmación y la nota quedará visible en la sección de notas anteriores con estado "Pendiente".
-5. El sistema enviará la nota al servidor central en el siguiente ciclo (máximo 10 segundos).
+3. Para usar una plantilla guardada, haga clic en el botón **"Textos Predefinidos"**. Se desplegará el listado de sus plantillas activas. Al hacer clic en una, su contenido reemplaza el texto actual del área.
+4. Haga clic en **"Guardar Nota"** cuando esté listo.
+5. Aparecerá un mensaje verde de confirmación y la nota quedará visible en la sección de notas anteriores con estado "Pendiente".
+6. El sistema enviará la nota al servidor central en el siguiente ciclo (máximo 10 segundos).
 
 > **Nota:** El botón "Guardar Nota" está deshabilitado si el área de texto está vacía o si el sistema está en modo solo lectura.
+
+### Editar o eliminar una nota
+
+Si la nota **no ha sido sincronizada** con el servidor central (estado "Pendiente") y usted es su autor, puede:
+
+- **Editar**: Haga clic en el ícono de edición junto a la nota. El texto se cargará en el área de edición. Modifique el contenido y haga clic en "Guardar cambios".
+- **Eliminar**: Haga clic en el ícono de eliminación. Se pedirá confirmación antes de borrar la nota. Al eliminar, el evento pendiente de sincronización también se cancela.
+
+> Las notas ya enviadas al servidor central (estado "Enviado") no pueden modificarse ni eliminarse para garantizar la integridad del registro médico.
 
 ---
 
@@ -263,7 +273,7 @@ Si el servidor central se desconecta, el modo solo lectura se desactiva automát
 
 ## 8. Configuración de usuario
 
-Haga clic en su nombre de usuario en el encabezado para abrir el modal de configuración. Tiene dos pestañas disponibles: **Configuración** y **Filtros**.
+Haga clic en su nombre de usuario en el encabezado para abrir el modal de configuración. Tiene tres pestañas disponibles: **Configuración**, **Filtros** y **Textos Predefinidos**.
 
 ### Pestaña Configuración
 
@@ -319,6 +329,30 @@ Los valores deben coincidir exactamente con los valores que usa el servidor cent
 #### Guardar los filtros
 
 Haga clic en **Guardar filtros**. Al guardar, el sistema ejecuta automáticamente una sincronización inmediata con el servidor central para cargar los episodios según los nuevos criterios. El resultado se verá reflejado en la lista de episodios en pocos segundos.
+
+---
+
+### Pestaña Textos Predefinidos
+
+Permite crear y gestionar plantillas de texto reutilizables para sus notas clínicas. Las plantillas están disponibles en la pantalla de Nota Clínica para insertar su contenido con un clic.
+
+#### Ver y gestionar plantillas
+
+La pestaña muestra la lista de sus plantillas. Cada entrada muestra el título, un extracto del contenido y la fecha de última modificación.
+
+| Acción | Descripción |
+|---|---|
+| **Crear** | Haga clic en "Nueva Plantilla". Ingrese un título descriptivo y el texto completo. Guarde para que esté disponible inmediatamente. |
+| **Editar** | Haga clic en el ícono de edición de una plantilla para modificar su título o contenido. |
+| **Activar / Desactivar** | Use el interruptor de la plantilla para que aparezca u oculte del selector en la pantalla de notas. Las plantillas desactivadas no se eliminan, solo se ocultan. |
+| **Eliminar** | Haga clic en el ícono de eliminar para borrar permanentemente una plantilla. |
+
+#### Cómo usar una plantilla en una nota clínica
+
+1. Abra un episodio para ir a la pantalla de Nota Clínica.
+2. Haga clic en el botón **"Textos Predefinidos"** (sobre el área de texto).
+3. Seleccione la plantilla deseada. Su contenido reemplazará el texto actual del área.
+4. Edite el texto si necesita personalizarlo y haga clic en "Guardar Nota".
 
 ---
 
