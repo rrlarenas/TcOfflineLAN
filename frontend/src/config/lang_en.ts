@@ -70,6 +70,8 @@ export const lang_en: TranslationKeys = {
     sync: 'Sync',
     noEpisodes: 'No episodes available',
     noEpisodesInCategory: 'No episodes in this category',
+    noSearchResults: 'No episodes match the search',
+    searchPlaceholder: 'Search by patient, ID or professional...',
     loadingEpisodes: 'Loading episodes...',
     connected: 'Connected',
     disconnected: 'Disconnected',

@@ -67,6 +67,8 @@ export const lang_es = {
     sync: 'Sincronización',
     noEpisodes: 'No hay episodios disponibles',
     noEpisodesInCategory: 'No hay episodios en esta categoría',
+    noSearchResults: 'No hay episodios que coincidan con la búsqueda',
+    searchPlaceholder: 'Buscar por paciente, identificador o profesional...',
     loadingEpisodes: 'Cargando episodios...',
     connected: 'Conectado',
     disconnected: 'Sin conexión',
